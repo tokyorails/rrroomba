@@ -1,0 +1,5 @@
+if [ -f "$0".local ]; then
+  source "$0".local
+else
+  rvm use 1.9.3
+fi

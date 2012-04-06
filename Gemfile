@@ -1,30 +1,30 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.1.0'
-
-# Bundle edge Rails instead:
-# gem 'rails',     :git => 'git://github.com/rails/rails.git'
+gem 'rails', '~>3.2'
+gem 'serialport'
 
 gem 'sqlite3'
 
 gem 'json'
+gem 'pry'
+
+gem 'jquery-rails'
 
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
-  gem 'sass-rails', "  ~> 3.1.0"
-  gem 'coffee-rails', "~> 3.1.0"
+  gem 'sass-rails'
+  gem 'coffee-rails'
   gem 'uglifier'
 end
 
-gem 'jquery-rails'
+group :development do
+  gem 'thin'
+end
 
-# Use unicorn as the web server
-# gem 'unicorn'
-
-# Deploy with Capistrano
-# gem 'capistrano'
-
-# To use debugger
-# gem 'ruby-debug'
+group :test do
+  gem 'minitest'  # included in 1.9 but added here to get the latest version
+  gem 'minitest-spec-rails'
+  gem 'turn' # produce a nice output when running tests
+end
 
