@@ -1,6 +1,8 @@
 class RoombaSimulation < Roomba
   def initialize(port="simulation", latency=0, baud=115200)
-    @serial = RoombaSerialSimulation.new(port)
+    @serial = RoombaSerialSimulation.new do |config|
+      simulation = port
+    end
     @latency = latency
     sleep 0.2
     api_setup_start

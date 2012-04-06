@@ -4,7 +4,16 @@ require 'test_helper'
 # ruby -Itest test/unit/roomba_simulation.rb
 
 describe RoombaSimulation do
-  let(:roomba) { RoombaSimulation.new }
+  let(:roomba) do
+     RoombaSimulation.new do |config|
+       simulation = 'simulation'
+       x = 0
+       y = 0    
+       facing = 0
+       boundaries = [1000, -1000, 800, -800]
+       obstacles = [[0, 500, 20],[300, 0, 20],[-900, -700, 10]]
+    end
+  end
 
   it "creates an instance" do
     roomba.must_be_instance_of RoombaSimulation

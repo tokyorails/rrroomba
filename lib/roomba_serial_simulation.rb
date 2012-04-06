@@ -2,21 +2,24 @@ class RoombaSerialSimulation < Roomba
   attr_accessor :simulation, :requested_readings, :readings, :x, :y, :facing, :boundaries, :obstacles, :moving, :velocity, :turning, :degree, :timestamp
   ROOMBA_RADIUS = 176
 
-  # currently the sumulation settings are hardcoded in the initializer
-  # need to refactor to allow various predefined or even random simulations
-  def initialize(simulation)
-    @simulation = simulation
-    @x = 0
-    @y = 0
-    @facing = 0 #+y, @facing of 90 == +x, @facing of 180 == -y, @facing of 270 == -x
-    @boundaries = [1000, -1000, 800, -800]#x,-x, y, -y
-    @obstacles = [[0, 500, 20],[300, 0, 20],[-900, -700, 10]]#[x,y,radius]
-    @moving = false
-    @velocity = 0
-    @degree = 0
-    @facing = 0
-    @turning = false
-    @readings = []
+  def initialize()
+    yield self
+
+    # Set defaults if not set in the initializer block
+    # These defaults match the previously hard-coded values
+    simulation ||= 'simulation'
+    x ||= 0
+    y ||= 0
+    facing ||= 0 #+y, @facing of 90 == +x, @facing of 180 == -y, @facing of 270 == -x
+    boundaries ||= [1000, -1000, 800, -800]#x,-x, y, -y
+    obstacles ||= [[0, 500, 20],[300, 0, 20],[-900, -700, 10]]#[x,y,radius]
+
+    # The following are not to be set by the user
+    moving = false
+    velocity = 0
+    degree = 0
+    turning = false
+    readings = []
   end
 
   # When the RoombaSimulation class tries to send data to the simulated Roomba
