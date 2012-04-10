@@ -65,7 +65,12 @@ class Roomba
 
   def initialize(port, latency=0, baud=115200)
     # baud must be 115200 for communicating with 500 series Roomba and newer (tested with Roomba 770), change to 57600 for 400 series and older
-    @serial = SerialPort.new(port, baud, 8, 1, SerialPort::NONE)
+    if port[/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\:[0-9]{1,5}/]
+      require 'socket'
+      @serial = TCPSocket.open(port.split(":")[0], port.split(":")[1])
+    else
+      @serial = SerialPort.new(port, baud, 8, 1, SerialPort::NONE)
+    end
     @latency = latency
     sleep 0.2
     api_setup_start
@@ -239,7 +244,7 @@ class Roomba
     # 7 = 19200
     # 10 = 57600
     # 11 = 115200
-    write(128, baud_code)
+    write(129, baud_code)
   end
 
   # Enables user control of Roomba, puts SCI in safe mode
