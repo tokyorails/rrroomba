@@ -68,6 +68,8 @@ class Roomba
     if port[/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\:[0-9]{1,5}/]
       require 'socket'
       @serial = TCPSocket.open(port.split(":")[0], port.split(":")[1])
+      def @serial.read_timeout=(value) end
+      def @serial.rts=(value) end
     else
       @serial = SerialPort.new(port, baud, 8, 1, SerialPort::NONE)
     end
@@ -405,7 +407,9 @@ class Roomba
   private
   # Change all the arguments to single bytes before writing
   def write(*args)
-    @serial.write((args.map{ |argument| argument.chr }).to_s)
+    args.each do |a|
+      @serial.write a.chr #@serial.write((args.map{ |argument| argument.chr }).to_s) #changed to support additional hardware
+    end
   end
 
   def read(timeout=50)
