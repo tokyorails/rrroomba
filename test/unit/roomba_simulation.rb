@@ -10,6 +10,7 @@ describe RoombaSimulation do
     roomba.must_be_instance_of RoombaSimulation
   end
 
+
   describe "#set_velocity" do
     it "sets related variables" do
       vars = [:velocity_hex, :velocity_high, :velocity_low]
@@ -31,6 +32,7 @@ describe RoombaSimulation do
     end
   end
 
+
   describe "#set_degree" do
     it "sets related variables" do
       vars = [:radius_hex, :radius_high, :radius_low]
@@ -46,6 +48,7 @@ describe RoombaSimulation do
     end
   end
 
+
   describe "#signed_integer" do
     it "returns an 8bit signed integer" do
       roomba.signed_integer([255]).must_equal -1
@@ -56,5 +59,42 @@ describe RoombaSimulation do
       roomba.signed_integer([255,106]).must_equal -150
       roomba.signed_integer([1,44]).must_equal 300
     end
+  end
+
+
+  describe "cleaning schedule" do
+    it "does nothing if passed no days" do
+      roomba.schedule_cleaning.must_be_nil
+    end
+
+    it "validates the days' name" do
+      lambda {roomba.schedule_cleaning(:lundi => '10:45')}.must_raise(ArgumentError)
+    end
+
+    it "validates the time format" do
+      [nil, '', ' 12:30 ', '1230', '-1:-1', 'abcd', "\n\n12:30\n\n", "\n12\n:30\n"].each do |time|
+        lambda {roomba.schedule_cleaning(:monday => time)}.must_raise(ArgumentError)
+      end
+      %w{24:00 10:60 24:60}.each do |time|
+        lambda {roomba.schedule_cleaning(:monday => time)}.must_raise(RangeError)
+      end
+    end
+
+    it "schedules a couple of days" do
+      roomba.schedule_cleaning(
+        :monday => '10:00', :tuesday => '13:30', :monday => '12:00'
+      ).must_equal [6, 0, 0, 12, 0, 13, 30, 0, 0, 0, 0, 0, 0, 0, 0]
+    end
+
+    it "schedules all days" do
+      roomba.schedule_cleaning(
+        :monday => '10:01', :tuesday => '11:11', :wednesday => '12:21', :thursday => '13:31', :friday => '14:41', :saturday => '15:51', :sunday => '16:00'
+      ).must_equal [127, 16, 0, 10, 1, 11, 11, 12, 21, 13, 31, 14, 41, 15, 51]
+    end
+
+    it "clears all days" do
+      roomba.clear_schedule.must_equal [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    end
+
   end
 end

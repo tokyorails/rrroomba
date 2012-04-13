@@ -63,6 +63,17 @@ class Roomba
     :statis => { :packet => 58, :bytes => 1, :signed => false, :bits => true },
   }
 
+  SCHEDULE_DAYS = {
+    :sunday    => '00000001',
+    :monday    => '00000010',
+    :tuesday   => '00000100',
+    :wednesday => '00001000',
+    :thursday  => '00010000',
+    :friday    => '00100000',
+    :saturday  => '01000000'
+  }
+
+
   def initialize(port, latency=0, baud=115200)
     # baud must be 115200 for communicating with 500 series Roomba and newer (tested with Roomba 770), change to 57600 for 400 series and older
     if port[/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\:[0-9]{1,5}/]
@@ -229,6 +240,36 @@ class Roomba
     api_setup_control
   end
 
+  # sets the cleaning schedule
+  # expects a hash like: {:monday => '10:30', :tuesday => '14:00', ...}
+  def schedule_cleaning(days={})
+    return if days.empty?
+    days.each do |day, time|
+      raise ArgumentError, "unknown day '#{day}'" unless SCHEDULE_DAYS[day]
+      raise ArgumentError, "invalid time format '#{time}'" unless time =~ /\A\d{2}:\d{2}\Z/
+      t = time.split(':').map(&:to_i)
+      raise RangeError, "invalid time '#{time}'" unless (0..23).include?(t.first) && (0..59).include?(t.second)
+    end
+
+    bytes = []
+    bytes << days.keys.map{|d| SCHEDULE_DAYS[d]}.inject(0){|res,b| res | b.to_i(2)} # bitwise OR the days to make the first byte of the schedule command
+    SCHEDULE_DAYS.keys.each do |day| # ruby 1.9 keeps the hash order so it should be ok but it might not work as expected in 1.8
+      time = days[day]
+      bytes.concat(time ? time.split(':').map(&:to_i) : [0,0])
+    end
+    api_schedule(bytes)
+    bytes
+  end
+
+  # clears the cleaning schedule
+  def clear_schedule
+    bytes = [0] * 15
+    api_schedule(bytes)
+    bytes
+  end
+
+
+
   # ALL OF THE FOLLOWING METHODS will become private in a future release
   # left as public until they have been sufficiently abstracted at a higher level.
   # Refer to the ROI for accurate documentation except where noted specifically in the comments here
@@ -283,6 +324,11 @@ class Roomba
   # Starts a maximum cleaning cycle.
   def api_max
     write(136)
+  end
+
+  # schedules cleaning
+  def api_schedule(bytes)
+    write(167, *bytes)
   end
 
   # Controls Roomba's drive wheels.
