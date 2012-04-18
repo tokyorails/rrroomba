@@ -3,7 +3,7 @@ Rrroomba::Application.routes.draw do
     member do
       get :control
       get :command
-      post :reply
+      get :reply
     end
   end
 

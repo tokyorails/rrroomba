@@ -46,6 +46,17 @@
     </div>
   <% end %>
 </div>
+<script type="text/javascript">
+$(document).ready(
+  function(){
+    setInterval(function(){
+      $.ajax({
+        url: "<%= reply_roombot_path %>",
+        context: document.body
+      });
+    }, 3000);
+  });
+</script>
 <div class="span3">
   <div class="well">
     <center><h5>ROOMBOT REPORT</h5></center>

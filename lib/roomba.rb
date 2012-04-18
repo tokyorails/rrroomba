@@ -84,6 +84,7 @@ class Roomba
     else
       @serial = SerialPort.new(port, baud, 8, 1, SerialPort::NONE)
     end
+    @messages = []
     @latency = latency
     sleep 0.2
     api_setup_start
@@ -156,7 +157,12 @@ class Roomba
     @velocity_low = @velocity_hex[2..3].to_i(16)#low byte
   end
 
+  def messages
+    return @messages.shift
+  end
+
   def get_readings(*sensors_requested)
+    sensors_requested.collect!{|c| c.to_sym }
     packet_ids = sensors_requested.map{ |sensor| SENSORS[sensor][:packet] }
     bytes = api_querylist(*packet_ids)
     readings = {}
@@ -167,6 +173,7 @@ class Roomba
       readings[sensor][:formatted] = set_readings(sensor, readings[sensor][:raw])
       puts "Sensors: #{readings[sensor].inspect}"
     end
+    @messages.push readings
     readings #return hash of readings
   end
 

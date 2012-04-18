@@ -63,16 +63,28 @@ idletime = Time.now
 Thread.abort_on_exception = true
 loop do
   puts "Roomba Socket Server Running! (30 second timeout)"
-  Thread.start { sleep 30; raise "killed by timeout" if (idletime - Time.now).abs > 20;}
+  Thread.start do
+    sleep 30
+    if (idletime - Time.now).abs > 20
+      $roomba = nil
+      raise "killed by timeout"
+    end
+  end
   Thread.start(server.accept) do |client|
     command_array = client.gets("$ROOMBA$").gsub("$ROOMBA$","").split("$RoR$")
     puts command_array.inspect
     command = command_array.shift
     if !command.nil?
       idletime = Time.now
-      client.puts($roomba.send(command,*command_array.collect! {|v| v.to_i})) # Send the time to the client
-      client.puts "Closing the connection. Bye!"
-      raise "killed by client" if command == "kill"
+      if command == "kill"
+        $roomba = nil
+        raise "killed by client"
+      end
+      if command == "reply"
+        client.puts($roomba.send("messages"))
+      else
+        $roomba.send(command,*command_array.collect! {|v| v.to_i}) # Pass the command to the roomba
+      end
     end
     client.close# Disconnect from the client
   end

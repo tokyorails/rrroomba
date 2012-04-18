@@ -115,6 +115,16 @@ class RoombotsController < ApplicationController
   end
 
   def reply
-
+    begin
+      roomba_socket = TCPSocket.open("localhost",3001)
+      roomba_socket.puts "messages$ROOMBA$"
+      @replies = ""
+      until (reply = roomba_socket.gets).nil?
+        @replies = @replies + reply
+      end
+    rescue Exception => e
+      @label = "label-important"
+      @command = "Connection failed #{e}"
+    end
   end
 end

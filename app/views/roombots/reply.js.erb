@@ -1,0 +1,5 @@
+<% if @replies.nil? %>
+
+<% else %>
+  $('#roombot_replies').prepend("<span class='label label-info'>sensors</span><%= @replies.inspect %><br />");
+<% end %>
