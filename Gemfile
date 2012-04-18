@@ -17,6 +17,7 @@ group :assets do
   gem 'coffee-rails'
   gem 'uglifier'
   gem 'therubyracer'
+  gem 'twitter-bootstrap-rails'
 end
 
 group :development do

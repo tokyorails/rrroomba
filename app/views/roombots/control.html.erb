@@ -1,0 +1,65 @@
+<div class="span9">
+  <%- model_class = @roombot.class -%>
+  <!-- breadcrumbs -->
+  <ul class="breadcrumb">
+    <li>
+      <%= link_to "Roombots", roombots_path %> <span class="divider">/</span>
+    </li>
+    <li>
+      <%= link_to @roombot.name, roombot_path(@roombot)  %> <span class="divider">/</span>
+    </li>
+    <li class="active">Control</li>
+  </ul>
+  <!-- end breadcrumbs -->
+  <h1><%=t '.title', :default => "Control: " + @roombot.name %></h1>
+  <div class="roombot_status scrollable well" id="roombot_replies"></div>
+
+  <%= form_tag(command_roombot_path, :method => "get", :remote => true, :class => 'form-horizontal') do %>
+    <input type="hidden" name="address" value="<%= @roombot.location %>">
+    <input type="hidden" name="command" value="move">
+    <div class="control-group">
+      <%= label_tag(:distance, "Distance:", :class => 'control-label') %>
+      <div class="controls">
+        <div class="input-append">
+          <%= text_field_tag :distance, 100, :class => 'text_field span1' %>
+          <span class="add-on">mm</span>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <%= label_tag :angle, "Angle:", :class => 'control-label' %>
+      <div class="controls">
+        <div class="input-append">
+          <%= text_field_tag :angle, 0, :class => 'text_field span1' %>
+          <span class="add-on">&#176;</span>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <%= label_tag :velocity, "Velocity", :class => 'control-label' %>
+      <div class="controls">
+        <%= select_tag :velocity, options_for_select((-500..500).step(50).to_a.map{|s| ["#{s}", s]}.reverse!), :class => 'span2' %>
+      </div>
+    </div>
+    <div class="form-actions">
+      <%= submit_tag "Move!", :class => 'btn btn-primary' %>
+    </div>
+  <% end %>
+</div>
+<div class="span3">
+  <div class="well">
+    <center><h5>ROOMBOT REPORT</h5></center>
+    <br />
+    <h6><span class="label">passive mode</span></h6>
+    <br />
+    <h6>Battery</h6>
+    <div class="progress progress-success">
+      <div class="bar" style="width: 60%;"></div>
+    </div>
+    <h6>Temperature</h6>
+    <h6><span class="label">ok</span></h6>
+    <br />
+    <h6>Status</h6>
+    <h6><span class="label label-info">undocked</span></h6>
+  </div>
+</div>

@@ -2,13 +2,29 @@
 <html>
 <head>
   <title>Rrroomba</title>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js" type = "text/javascript"></script>
+  -->
   <%= stylesheet_link_tag    "application" %>
   <%= javascript_include_tag "application" %>
   <%= csrf_meta_tags %>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-
-<%= yield %>
-
+<div class="navbar navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <ul class="nav">
+        <li <%= (controller_name == "simulations") ? "class='active'" : "" %>><%= link_to "Simulations", simulations_path %></li>
+        <li <%= (controller_name == "roombots") ? "class='active'" : "" %>><%= link_to "Roombots", roombots_path %></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <%= yield %>
+  </div>
+</div>
 </body>
 </html>

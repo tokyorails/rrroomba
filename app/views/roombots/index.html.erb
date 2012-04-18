@@ -1,0 +1,43 @@
+<div class="span9">
+<%- model_class = Roombot.new.class -%>
+<!-- breadcrumbs -->
+<ul class="breadcrumb">
+  <li class="active">
+    Roombots
+  </li>
+</ul>
+<!-- end breadcrumbs -->
+<h1><%=t '.title', :default => model_class.model_name.human.pluralize %></h1>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th><%= model_class.human_attribute_name(:id) %></th>
+      <th><%= model_class.human_attribute_name(:name) %></th>
+      <th><%= model_class.human_attribute_name(:location) %></th>
+      <th><%=t '.actions', :default => t("helpers.actions") %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @roombots.each do |roombot| %>
+      <tr>
+        <td><%= link_to roombot.id, roombot_path(roombot) %></td>
+        <td><%= link_to roombot.name, roombot_path(roombot) %></td>
+        <td><%= roombot.location %></td>
+        <td>
+          <%= link_to t('.edit', :default => t("helpers.links.edit")),
+                      edit_roombot_path(roombot), :class => 'btn btn-mini' %>
+          <%= link_to t('.destroy', :default => t("Exterminate")),
+                      roombot_path(roombot),
+                      :method => :delete,
+                      :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')),
+                      :class => 'btn btn-mini btn-danger' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to t('.new', :default => t("helpers.links.new")),
+            new_roombot_path,
+            :class => 'btn btn-primary' %>
+</div>

@@ -1,3 +1,36 @@
 <h1>Roomba Control</h1>
-What should we put here?
+What do you want Roomba to do?
 <%= render 'form' %>
+
+<%= form_tag drive_command_path, :method => :get do %>
+  Roomba <%= text_field_tag :roomba %><br />
+  <%= submit_tag "Demo", :name => "demo", :class => 'submit' %>
+<% end %>
+<pre>
+  empire()
+  api_play(0)
+  move(1000)
+  api_play(1)
+  move(800,140)
+  api_motors(1)
+  move(0,90)
+  api_motors(3)
+  move(1600,0,400)
+  api_motors(5)
+  move(1400,0,-300)
+  api_motors(0)
+  move(0,720,400)
+  move(0,720,-500)
+  api_play(0)
+  move(200,0,40)
+  api_play(1)
+  move(200,0,300)
+  sleep 1
+  api_spot
+  sleep 3
+  api_setup_control
+  sleep 1
+  api_spot
+  sleep 2
+  api_dock
+  </pre>

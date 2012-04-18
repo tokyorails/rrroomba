@@ -1,5 +1,7 @@
 <%= form_tag drive_command_path, :method => :get do %>
-  <%= text_field_tag :distance %>
-  <%= text_field_tag :angle %>
+  Roomba <%= text_field_tag :roomba %><br />
+  Distance <%= text_field_tag :distance %><br />
+  Angle <%= text_field_tag :angle %><br />
+  Velocity <%= text_field_tag :velocity %><br />
   <%= submit_tag "Go", :name => nil, :class => 'submit' %>
 <% end %>

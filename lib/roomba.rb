@@ -95,7 +95,7 @@ class Roomba
   # velocity is in mm/s (-500 to 500)
   # set distance = 0 and degree > 0 to spin roomba in place
   def move(distance, degree=0, velocity=200)
-    distance = distance.abs #distance can never be negative
+    distance = distance.to_i.abs #distance can never be negative
     if distance == 0 #not moving, just spinning on axis
       # time = wheelbase * PI / 360degrees * degrees / velocity ABS
       # wheelbase might be different for different roombas
@@ -112,7 +112,7 @@ class Roomba
     time_in_seconds = 10 if time_in_seconds > 10
     until (start_moving - Time.now).abs >= time_in_seconds
       # sensors call sleeps the script for 20ms, max read is 50ms, total time between loops about 65ms
-      sensors = get_readings(:bumps_and_drops)
+      sensors = get_readings(:bumps_and_drops, :wall)
       break if sensors[:bumps_and_drops][:formatted].to_i(2) > 0
     end
     api_drive(0,0,0,0)
@@ -151,7 +151,7 @@ class Roomba
     if velocity.abs > 500
       velocity = 500 * (velocity <=> 0)#don't forget the sign
     end
-    @velocity_hex = "%04X" % velocity
+    @velocity_hex = ("%04X" % velocity).sub("..","F")[-4,4]#have to remove the leading .. when a two's complement negative is converted to hex
     @velocity_high = @velocity_hex[0..1].to_i(16)#high byte
     @velocity_low = @velocity_hex[2..3].to_i(16)#low byte
   end
@@ -212,7 +212,6 @@ class Roomba
     move(0,720,-500)
     api_play(0)
     move(200,0,40)
-    move(100,90,-20)
     api_play(1)
     move(200,0,300)
     sleep 1
@@ -306,7 +305,7 @@ class Roomba
     write(132)
   end
 
-  # Puts the Roomba to sleep
+  # Puts the Roomba to sleep and in passive mode
   def api_power
     write(133)
   end
@@ -329,6 +328,15 @@ class Roomba
   # schedules cleaning
   def api_schedule(bytes)
     write(167, *bytes)
+  end
+
+  # Sets Roomba's clock.
+  # Day: [Sunday = 0, Monday = 1, Tuesday = 2, Wednesday = 3
+  # Thursday = 4, Friday = 5, Saturday = 6]
+  # Hour: 24-hour format (integer 0 - 23)
+  # Minute: integer 0 - 59
+  def api_day_time(day, hour, minute)
+    write(168, day, hour, minute)
   end
 
   # Controls Roomba's drive wheels.
@@ -369,7 +377,8 @@ class Roomba
   # Pass a single byte (8 bits) representing on and off states
   # for up to 8 different motors. Roomba actually only
   # reads bits 0,1, and 2 for the "side brush", "vacuum", and
-  # "main brush" respectively
+  # "main brush" respectively. UPDATE: Newer Roombas also read
+  # bits 3,4 for determining brush direction (spin clockwise / counter)
   # To turn on the only the vacuum motor send [138] [2] which
   # is 00000010, send [138] [7] to turn on all: 00000111
   def api_motors(byte)

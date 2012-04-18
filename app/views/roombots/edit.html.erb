@@ -1,0 +1,17 @@
+<div class="span9">
+<%- model_class = @roombot.class -%>
+<!-- breadcrumbs -->
+<ul class="breadcrumb">
+  <li>
+    <%= link_to "Roombots", roombots_path %> <span class="divider">/</span>
+  </li>
+  <li>
+    <%= link_to @roombot.name, roombot_path(@roombot)  %> <span class="divider">/</span>
+  </li>
+  <li class="active">Edit</li>
+</ul>
+<!-- end breadcrumbs -->
+<h1><%=t '.title', :default => t('helpers.titles.edit', :model => model_class.model_name.human,
+                                 :default => "Edit #{model_class.model_name.human}") %></h1>
+<%= render :partial => 'form' %>
+</div>
