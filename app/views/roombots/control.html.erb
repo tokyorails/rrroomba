@@ -11,9 +11,37 @@
     <li class="active">Control</li>
   </ul>
   <!-- end breadcrumbs -->
-  <h1><%=t '.title', :default => "Control: " + @roombot.name %></h1>
+  <h1><%= t('.title', :name => @roombot.name) %></h1>
   <div class="roombot_status scrollable well" id="roombot_replies"></div>
+</div>
+<div class="span3">
+  <div class="well">
+    <center><h5>ROOMBOT REPORT</h5></center>
+    <br />
+    <h6><span class="label">passive mode</span></h6>
+    <br />
+    <h6>Battery</h6>
+    <div class="progress progress-success">
+      <div class="bar" style="width: 60%;"></div>
+    </div>
+    <h6>Temperature</h6>
+    <h6><span class="label">ok</span></h6>
+    <br />
+    <h6>Status</h6>
+    <h6><span class="label label-info">undocked</span></h6>
+  </div>
+</div>
 
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div id="commands" class="span2">
+      <ul>
+        <li><%= link_to t('.move'), {:cmd => 'move'}, {:data => {:show => 'move'}} %></li>
+        <li><%= link_to t('.schedule'), {:cmd => 'schedule'}, {:data => {:show => 'schedule'}} %></li>
+      </ul>
+    </div>
+
+    <div id="move_cmd_panel" class="cmd_panel span10" style="display: <%= params[:cmd].blank? || params[:cmd] == 'move' ? 'block' : 'none' %>">
   <%= form_tag(command_roombot_path, :method => "get", :remote => true, :class => 'form-horizontal') do %>
     <input type="hidden" name="address" value="<%= @roombot.location %>">
     <input type="hidden" name="command" value="move">
@@ -45,7 +73,25 @@
       <%= submit_tag "Move!", :class => 'btn btn-primary' %>
     </div>
   <% end %>
+    </div>
+
+    <div id="schedule_cmd_panel" class="cmd_panel span10" style="display: <%= params[:cmd] == 'schedule' ? 'block' : 'none' %>">
+      <%= render 'schedule_form', :schedule => Schedule.first || Schedule.new %>
+    </div>
+  </div>
 </div>
+
+
+<script>
+  jQuery(function ($) {
+    var cmdPanels = $('.cmd_panel');
+    $(document).delegate('#commands a', 'click', function (e) {
+      cmdPanels.hide();
+      $('#' + $(this).data('show') + '_cmd_panel').show();
+      e.preventDefault();
+    })
+  });
+</script>
 <script type="text/javascript">
 $(document).ready(
   function(){
@@ -57,20 +103,3 @@ $(document).ready(
     }, 3000);
   });
 </script>
-<div class="span3">
-  <div class="well">
-    <center><h5>ROOMBOT REPORT</h5></center>
-    <br />
-    <h6><span class="label">passive mode</span></h6>
-    <br />
-    <h6>Battery</h6>
-    <div class="progress progress-success">
-      <div class="bar" style="width: 60%;"></div>
-    </div>
-    <h6>Temperature</h6>
-    <h6><span class="label">ok</span></h6>
-    <br />
-    <h6>Status</h6>
-    <h6><span class="label label-info">undocked</span></h6>
-  </div>
-</div>

@@ -1,0 +1,16 @@
+
+<%= form_for schedule, :url => schedule_path, :remote => true, :html => {:class => 'form-horizontal'} do |f| %>
+  <fieldset>
+    <legend><%= t('.schedule') %> </legend>
+    <% [:monday, :tuesday, :wednesday, :thursday, :friday, :saturday, :sunday].each do |day| -%>
+      <div class="control-group">
+        <%= f.label day, t(day, :scope => 'days'), :class => 'control-label' %>
+        <div class="controls">
+          <%= f.text_field day, :class => 'input-mini', :size => nil, :placeholder => 'hh:mm' %>
+        </div>
+      </div>
+    <% end -%>
+    <%= f.submit %>
+  </fieldset>
+<% end -%>
+
