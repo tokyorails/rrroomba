@@ -9,7 +9,10 @@ Rrroomba::Application.routes.draw do
 
   resources :simulations
 
+  resource :schedule, :except => [:destroy]
+
   get "drive/index"
   get "drive/command"
+
   root :to => 'roombots#index'
 end
