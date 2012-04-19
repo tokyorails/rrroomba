@@ -1,3 +1,17 @@
+<% content_for :js do -%>
+  <% javascript_tag do -%>
+    jQuery(function ($) {
+      var cmdPanels = $('.cmd_panel');
+      $(document).delegate('#commands a', 'click', function (e) {
+        cmdPanels.hide();
+        $('#' + $(this).data('show') + '_cmd_panel').show();
+        e.preventDefault();
+      })
+    });
+  <% end -%>
+<% end -%>
+
+
 <div class="span9">
   <%- model_class = @roombot.class -%>
   <!-- breadcrumbs -->
@@ -76,19 +90,8 @@
     </div>
 
     <div id="schedule_cmd_panel" class="cmd_panel span10" style="display: <%= params[:cmd] == 'schedule' ? 'block' : 'none' %>">
-      <%= render 'schedule_form', :schedule => Schedule.first || Schedule.new %>
+      <%= render 'schedule_form', :schedule => @roombot.schedule || @roombot.create_schedule %>
     </div>
   </div>
 </div>
 
-
-<script>
-  jQuery(function ($) {
-    var cmdPanels = $('.cmd_panel');
-    $(document).delegate('#commands a', 'click', function (e) {
-      cmdPanels.hide();
-      $('#' + $(this).data('show') + '_cmd_panel').show();
-      e.preventDefault();
-    })
-  });
-</script>

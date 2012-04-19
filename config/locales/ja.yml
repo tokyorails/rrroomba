@@ -1,4 +1,17 @@
+
 ja:
+
+  roombots:
+    control:
+      title: "Control: %{name}"
+      move: "移動"
+      schedule: "掃除スケジュール"
+    schedule_form:
+      schedule: "掃除スケジュール"
+      update: "更新"
+      clear: "クリア"
+      updated: "更新されました！"
+
   days:
     monday: "月曜日"
     tuesday: "火曜日"
