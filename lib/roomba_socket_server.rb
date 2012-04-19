@@ -27,7 +27,7 @@ optparse = OptionParser.new do |opts|
     options[:port] = port
   end
 
-  options[:latency] = 0
+  options[:latency] = 0.1
   opts.on( '-l', '--latency', 'Specify the Roomba latency' ) do |latency|
     options[:latency] = latency
   end
@@ -51,28 +51,29 @@ end
 # any options found there, as well as any parameters for
 # the options. What's left is the list of files.
 optparse.parse!
-
+begin
 ARGV.each do |f|
   puts f
   puts options[:latency]
   puts options[:baud]
   puts $roomba = Roomba.new(f.to_s,options[:latency],options[:baud])#need to add support for other initializer arguments
+  break
 end
 server = TCPServer.open(options[:port])   # Socket to listen on
 idletime = Time.now
 Thread.abort_on_exception = true
 loop do
-  puts "Roomba Socket Server Running! (30 second timeout)"
+  puts "Roomba Socket Server Running! (15 second timeout)"
   Thread.start do
-    sleep 30
-    if (idletime - Time.now).abs > 20
+    sleep 15
+    if (idletime - Time.now).abs > 15
       $roomba = nil
       raise "killed by timeout"
     end
   end
   Thread.start(server.accept) do |client|
     command_array = client.gets("$ROOMBA$").gsub("$ROOMBA$","").split("$RoR$")
-    puts command_array.inspect
+    #puts command_array.inspect
     command = command_array.shift
     if !command.nil?
       idletime = Time.now
@@ -80,12 +81,15 @@ loop do
         $roomba = nil
         raise "killed by client"
       end
-      if command == "reply"
-        client.puts($roomba.send("messages"))
+      if command == "messages"
+        client.puts($roomba.send("messages").inspect)
       else
-        $roomba.send(command,*command_array.collect! {|v| v.to_i}) # Pass the command to the roomba
+        $roomba.send(command,*command_array.collect! {|v| eval v }) # Pass the command to the roomba
       end
     end
     client.close# Disconnect from the client
   end
+end
+rescue
+  $roomba = nil
 end

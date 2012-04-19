@@ -14,7 +14,6 @@ class RoombotsController < ApplicationController
   # GET /roombots/1.json
   def show
     @roombot = Roombot.find(params[:id])
-
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @roombot }
@@ -83,7 +82,11 @@ class RoombotsController < ApplicationController
 
   def control
     @roombot = Roombot.find(params[:id])
-    system "nohup ruby lib/roomba_socket_server.rb #{@roombot.location} &"
+    begin
+      roomba_socket = TCPSocket.open("localhost",3001)
+    rescue
+      system "nohup ruby lib/roomba_socket_server.rb #{@roombot.location} &"
+    end
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @roombot }
@@ -95,12 +98,12 @@ class RoombotsController < ApplicationController
       roomba_socket = TCPSocket.open("localhost",3001)
       command_string = []
       @label = "label-success"
-      @command = params[:command] #params.map{|p| p.to_s }.join
+      @command = params[:command]
       case @command
       when "move"
         command_string = ["move",params[:distance],params[:angle],params[:velocity]]
-      when "song"
-
+      else
+        command_string = [@command] if Roomba.method_defined? @command
       end
 
       if command_string.length > 0
@@ -108,6 +111,7 @@ class RoombotsController < ApplicationController
       else
         @label = "label-warning"
       end
+      roomba_socket.close
     rescue Exception => e
       @label = "label-important"
       @command = "Connection failed #{e}"
@@ -115,13 +119,13 @@ class RoombotsController < ApplicationController
   end
 
   def reply
+    @replies = nil
     begin
       roomba_socket = TCPSocket.open("localhost",3001)
       roomba_socket.puts "messages$ROOMBA$"
-      @replies = ""
-      until (reply = roomba_socket.gets).nil?
-        @replies = @replies + reply
-      end
+      @replies = (roomba_socket.gets)
+      @replies = (@replies == "nil") ? nil : eval( @replies.strip )
+      roomba_socket.close
     rescue Exception => e
       @label = "label-important"
       @command = "Connection failed #{e}"

@@ -1,5 +1,33 @@
-<% if @replies.nil? %>
+<%
+if !@replies.nil?
+  battery_charge = 0
+  battery_capacity = 0
+  @replies.each do |reply|
+%>
+  $('#roombot_replies').prepend("<span class='label label-info'>sensors</span><%= reply.inspect %><br />");
+  <%
+    if reply[:oi_mode]
+      reply.each do |key, report|
+        next if key == :time
+  %>
+    $('#roombot_replies').prepend("<span class='label label-info'>sensors</span><%= key.inspect %><%= report.inspect %><br />");
+    $('#<%= key.to_s %>').html("<%= report[:text] %>");
 
-<% else %>
-  $('#roombot_replies').prepend("<span class='label label-info'>sensors</span><%= @replies.inspect %><br />");
+  <%
+        case key
+        when :battery_charge
+          battery_charge = report[:text]
+        when :battery_capacity
+          battery_capacity = report[:text]
+        end #end battery capacity hack
+      end
+    end
+  %>
+<%
+  end
+end
+if battery_charge > 0 && battery_capacity > 0
+  percentage = ((battery_charge.to_f / battery_capacity.to_f) * 100.0).to_i
+%>
+  $('#battery_bar').width("<%= percentage %>%");
 <% end %>

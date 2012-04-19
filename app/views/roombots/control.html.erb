@@ -18,17 +18,18 @@
   <div class="well">
     <center><h5>ROOMBOT REPORT</h5></center>
     <br />
-    <h6><span class="label">passive mode</span></h6>
+    <h6><span id="oi_mode" class="label label-info">passive mode</span></h6>
     <br />
-    <h6>Battery</h6>
-    <div class="progress progress-success">
-      <div class="bar" style="width: 60%;"></div>
+    <h6>Battery Charge</h6>
+    <div id="battery" class="progress progress-success">
+      <div id="battery_bar" class="bar" style="width: 60%;"></div>
     </div>
+    <center><span id="battery_charge">1</span> / <span id="battery_capacity">1</span></center>
     <h6>Temperature</h6>
-    <h6><span class="label">ok</span></h6>
+    <h6><span id="temperature" class="label">ok</span></h6>
     <br />
     <h6>Status</h6>
-    <h6><span class="label label-info">undocked</span></h6>
+    <h6><span id="charging_state" class="label label-info">undocked</span></h6>
   </div>
 </div>
 
@@ -66,7 +67,7 @@
     <div class="control-group">
       <%= label_tag :velocity, "Velocity", :class => 'control-label' %>
       <div class="controls">
-        <%= select_tag :velocity, options_for_select((-500..500).step(50).to_a.map{|s| ["#{s}", s]}.reverse!), :class => 'span2' %>
+        <%= select_tag :velocity, options_for_select((-500..500).step(50).to_a.map{|s| ["#{s}", s]}.reverse!,200), :class => 'span2' %>
       </div>
     </div>
     <div class="form-actions">
@@ -100,6 +101,22 @@ $(document).ready(
         url: "<%= reply_roombot_path %>",
         context: document.body
       });
-    }, 3000);
+    }, 2000);
   });
+$(document).ready(
+  function(){
+    setInterval(function(){
+      $.ajax({
+        url: "<%= command_roombot_path %>?address=<%= @roombot.location %>&command=report",
+        context: document.body
+      });
+    }, 20000);
+  });
+  $(document).ready(
+    function(){
+    $.ajax({
+      url: "<%= command_roombot_path %>?address=<%= @roombot.location %>&command=report",
+      context: document.body
+    });
+    });
 </script>

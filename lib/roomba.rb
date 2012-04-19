@@ -3,7 +3,7 @@
 #include Math
 
 class Roomba
-  attr_accessor :serial, :velocity_hex, :velocity_high, :velocity_low, :radius_hex, :radius_high, :radius_low, :latency
+  attr_accessor :serial, :velocity_hex, :velocity_high, :velocity_low, :radius_hex, :radius_high, :radius_low, :latency, :messages
 
   # Packets requested are sent every 15 ms (0.015), which is the rate Roomba uses to update data. page 17 ROI (2012)
   ROOMBA_DATA_REFRESH_RATE = 0.15 #may need to modify this value for hardware that has any latency issues, increase for more certainty
@@ -74,7 +74,7 @@ class Roomba
   }
 
 
-  def initialize(port, latency=0, baud=115200)
+  def initialize(port, latency=0.1, baud=115200)
     # baud must be 115200 for communicating with 500 series Roomba and newer (tested with Roomba 770), change to 57600 for 400 series and older
     if port[/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\:[0-9]{1,5}/]
       require 'socket'
@@ -114,6 +114,7 @@ class Roomba
     until (start_moving - Time.now).abs >= time_in_seconds
       # sensors call sleeps the script for 20ms, max read is 50ms, total time between loops about 65ms
       sensors = get_readings(:bumps_and_drops, :wall)
+      @messages.push sensors
       break if sensors[:bumps_and_drops][:formatted].to_i(2) > 0
     end
     api_drive(0,0,0,0)
@@ -158,7 +159,49 @@ class Roomba
   end
 
   def messages
-    return @messages.shift
+    return @messages.shift(@messages.size)
+  end
+
+  # quick report of basic info, should break this out into individual method calls
+  def report
+    sensors = get_readings(:temperature, :oi_mode, :charging_state, :battery_charge, :battery_capacity)
+
+    sensors[:oi_mode][:text] = case sensors[:oi_mode][:formatted]
+    when 0
+      "off"
+    when 1
+      "passive mode"
+    when 2
+      "safe mode"
+    when 3
+      "full mode"
+    end
+
+    sensors[:temperature][:text] = sensors[:temperature][:formatted].to_s + " Celsius"
+    sensors[:battery_charge][:text] = sensors[:battery_charge][:formatted]
+    sensors[:battery_capacity][:text] = sensors[:battery_capacity][:formatted]
+
+    sensors[:charging_state][:text] = case sensors[:charging_state][:formatted]
+    when 1
+      "charging"
+    when 2
+      "docked"
+    when 3
+      "docked+"
+    else
+      "undocked"
+    end
+
+    @messages.push sensors
+    sensors
+  end
+
+  def battery
+
+  end
+
+  def temperature
+
   end
 
   def get_readings(*sensors_requested)
@@ -173,13 +216,15 @@ class Roomba
       readings[sensor][:formatted] = set_readings(sensor, readings[sensor][:raw])
       puts "Sensors: #{readings[sensor].inspect}"
     end
-    @messages.push readings
     readings #return hash of readings
   end
 
   def set_readings(sensor, readings)
+    readings[0] = 0 if readings[0].nil?
+    if readings.size > 1
+      readings[1] = 0 if readings[1].nil?
+    end
     if SENSORS[sensor][:bits] #return a string representation of the bits
-      readings[0] = 0 if readings[0].nil?
       return readings.first.to_s(2)
     elsif !SENSORS[sensor][:signed] && SENSORS[sensor][:bytes] == 1 #return an unsigned integer
       return readings.first
@@ -441,13 +486,13 @@ class Roomba
   # LIST OF SENSORS AND SUBSETS.
   def api_sensors(packet_code)
     write(142, packet_code)
-    sleep_latency
+    wait_for_rx
     read
   end
 
   def api_querylist(*bytes)
     write(149, bytes.length, *bytes)
-    sleep_latency
+    wait_for_rx
     read
   end
 
@@ -470,7 +515,7 @@ class Roomba
   # Change all the arguments to single bytes before writing
   def write(*args)
     args.each do |a|
-      @serial.write a.chr #@serial.write((args.map{ |argument| argument.chr }).to_s) #changed to support additional hardware
+      @serial.write a.chr
     end
   end
 
@@ -488,7 +533,7 @@ class Roomba
   # a little extra time between requesting sensor data and
   # fetching. I set @latency to 0.1 or 0.2 in the initializer
   # when using Bluetooth.
-  def sleep_latency
+  def wait_for_rx
     sleep ROOMBA_DATA_REFRESH_RATE + @latency
   end
 end
