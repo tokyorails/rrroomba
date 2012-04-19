@@ -67,22 +67,13 @@ describe RoombaSimulation do
       roomba.schedule_cleaning.must_be_nil
     end
 
-    it "validates the days' name" do
-      lambda {roomba.schedule_cleaning(:lundi => '10:45')}.must_raise(ArgumentError)
-    end
-
-    it "validates the time format" do
-      [nil, '', ' 12:30 ', '1230', '-1:-1', 'abcd', "\n\n12:30\n\n", "\n12\n:30\n"].each do |time|
-        lambda {roomba.schedule_cleaning(:monday => time)}.must_raise(ArgumentError)
-      end
-      %w{24:00 10:60 24:60}.each do |time|
-        lambda {roomba.schedule_cleaning(:monday => time)}.must_raise(RangeError)
-      end
-    end
-
     it "schedules a couple of days" do
       roomba.schedule_cleaning(
         :monday => '10:00', :tuesday => '13:30', :monday => '12:00'
+      ).must_equal [6, 0, 0, 12, 0, 13, 30, 0, 0, 0, 0, 0, 0, 0, 0]
+
+      roomba.schedule_cleaning(
+        'tuesday' => '13:30', 'monday' => '12:00'
       ).must_equal [6, 0, 0, 12, 0, 13, 30, 0, 0, 0, 0, 0, 0, 0, 0]
     end
 

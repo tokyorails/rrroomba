@@ -6,6 +6,11 @@ en:
       title: "Control: %{name}"
       move: "Move"
       schedule: "Schedule"
+    schedule_form:
+      schedule: "Cleaning schedule"
+      update: "Update"
+      clear: "Clear"
+      updated: "schedule updated!"
 
   days:
     monday: "Monday"

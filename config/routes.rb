@@ -9,7 +9,7 @@ Rrroomba::Application.routes.draw do
 
   resources :simulations
 
-  resource :schedule, :except => [:destroy]
+  resources :schedules, :only => [:update]
 
   get "drive/index"
   get "drive/command"

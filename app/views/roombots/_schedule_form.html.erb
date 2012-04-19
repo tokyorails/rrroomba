@@ -1,16 +1,46 @@
+<% content_for :js do -%>
+  <% javascript_tag do -%>
+    jQuery(function ($) {
+      $('#clear_btn').bind('click', function (e) {
+        $('#schedule_form input[type="text"]').val('');
+      });
 
-<%= form_for schedule, :url => schedule_path, :remote => true, :html => {:class => 'form-horizontal'} do |f| %>
+      $('#schedule_form')
+        .bind('ajax:beforeSend', function (xhr, settings) {
+          $(this).find('#success_indicator').hide();
+          $(this).find('.help-inline').remove();
+          $(this).find('.control-group').removeClass('error');
+        })
+        .bind('ajax:success', function (data, status, xhr) {
+          $(this).find('#success_indicator').show();
+        })
+        .bind('ajax:error', function (xhr, status, error) {
+          var errors = JSON.parse(status.responseText), input;
+          $.each(errors, function (field, msg) {
+            input = $('#schedule_' + field);
+            input.closest('.control-group').addClass('error');
+            input.after('<span class="help-inline">' + msg[0] + '</span>');
+          });
+        });
+    });
+  <% end -%>
+<% end -%>
+
+
+<%= form_for schedule, :remote => true, :html => {:id => 'schedule_form', :class => 'form-horizontal'} do |f| %>
+  <%= f.hidden_field :roombot_id %>
   <fieldset>
-    <legend><%= t('.schedule') %> </legend>
+    <legend><%= t('.schedule') -%><span id="success_indicator" class="label label-success"><%= t '.updated' -%></span></legend>
     <% [:monday, :tuesday, :wednesday, :thursday, :friday, :saturday, :sunday].each do |day| -%>
       <div class="control-group">
-        <%= f.label day, t(day, :scope => 'days'), :class => 'control-label' %>
+        <%= f.label day, t(day, :scope => 'days'), :class => 'control-label' -%>
         <div class="controls">
-          <%= f.text_field day, :class => 'input-mini', :size => nil, :placeholder => 'hh:mm' %>
+          <%= f.text_field day, :class => 'input-mini', :size => nil, :placeholder => 'hh:mm' -%>
         </div>
       </div>
     <% end -%>
-    <%= f.submit %>
+    <%= f.submit t('.update'), :class => 'btn btn-primary' -%>
+    <%= f.button t('.clear'), :id => 'clear_btn', :class => 'btn' -%>
   </fieldset>
 <% end -%>
 

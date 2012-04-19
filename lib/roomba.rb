@@ -295,18 +295,11 @@ class Roomba
   # expects a hash like: {:monday => '10:30', :tuesday => '14:00', ...}
   def schedule_cleaning(days={})
     return if days.empty?
-    days.each do |day, time|
-      raise ArgumentError, "unknown day '#{day}'" unless SCHEDULE_DAYS[day]
-      raise ArgumentError, "invalid time format '#{time}'" unless time =~ /\A\d{2}:\d{2}\Z/
-      t = time.split(':').map(&:to_i)
-      raise RangeError, "invalid time '#{time}'" unless (0..23).include?(t.first) && (0..59).include?(t.second)
-    end
-
     bytes = []
-    bytes << days.keys.map{|d| SCHEDULE_DAYS[d]}.inject(0){|res,b| res | b.to_i(2)} # bitwise OR the days to make the first byte of the schedule command
+    bytes << days.keys.map{|d| SCHEDULE_DAYS[d.to_sym]}.inject(0){|res,b| res | b.to_i(2)} # bitwise OR the days to make the first byte of the schedule command
     SCHEDULE_DAYS.keys.each do |day| # ruby 1.9 keeps the hash order so it should be ok but it might not work as expected in 1.8
-      time = days[day]
-      bytes.concat(time ? time.split(':').map(&:to_i) : [0,0])
+      time = days[day] || days[day.to_s]  # accept both strings and symbols as keys
+      bytes.concat(time.present? ? time.split(':').map(&:to_i) : [0,0])
     end
     api_schedule(bytes)
     bytes
