@@ -1,4 +1,4 @@
-Welcome to RRRoomba
+![Rrroomba!](http://www.forthecode.org/custom/images/rrroomba.png)
 =======
 
 
