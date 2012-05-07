@@ -2,7 +2,7 @@ class RoombaSerialSimulation < Roomba
   attr_accessor :simulation, :requested_readings, :readings, :x, :y, :facing, :boundaries, :obstacles, :moving, :velocity, :turning, :degree, :timestamp
   ROOMBA_RADIUS = 176
 
-  # currently the sumulation settings are hardcoded in the initializer
+  # currently the simulation settings are hardcoded in the initializer
   # need to refactor to allow various predefined or even random simulations
   def initialize
     yield self if block_given?
