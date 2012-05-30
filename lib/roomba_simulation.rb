@@ -3,11 +3,7 @@ class RoombaSimulation < Roomba
     @serial = RoombaSerialSimulation.new do |c|
       c.simulation = port
     end
-    @latency = latency
-    sleep 0.2
-    api_setup_start
-    sleep 0.1
-    api_setup_control
+    super(port, latency, baud, @serial)
   end
 
   def write(*args)

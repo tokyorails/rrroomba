@@ -74,15 +74,12 @@ class Roomba
   }
 
 
-  def initialize(port, latency=0.1, baud=115200)
+  def initialize(port, latency=0.1, baud=115200, serial=nil)
     # baud must be 115200 for communicating with 500 series Roomba and newer (tested with Roomba 770), change to 57600 for 400 series and older
-    if port[/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\:[0-9]{1,5}/]
-      require 'socket'
-      @serial = TCPSocket.open(port.split(":")[0], port.split(":")[1])
-      def @serial.read_timeout=(value) end
-      def @serial.rts=(value) end
+    if serial.nil? # we need to provide our own serial
+      setup_default_serial
     else
-      @serial = SerialPort.new(port, baud, 8, 1, SerialPort::NONE)
+      @serial = serial
     end
     @messages = []
     @latency = latency
@@ -91,6 +88,18 @@ class Roomba
     sleep 0.1
     api_setup_control
   end
+
+  def setup_default_serial
+    if port[/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\:[0-9]{1,5}/]
+      require 'socket'
+      @serial = TCPSocket.open(port.split(":")[0], port.split(":")[1])
+      def @serial.read_timeout=(value) end
+      def @serial.rts=(value) end
+    else
+      @serial = SerialPort.new(port, baud, 8, 1, SerialPort::NONE)
+    end
+  end
+  private :setup_default_serial
 
   # distance is in mm
   # velocity is in mm/s (-500 to 500)
