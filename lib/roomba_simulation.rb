@@ -9,4 +9,13 @@ class RoombaSimulation < Roomba
   def write(*args)
     @serial.write(*args)
   end
+
+  def render
+    ui = {}
+    ui['x'] = @serial.x
+    ui['y'] = @serial.y
+    ui['radius'] = @serial.radius
+    ui['name'] = 'Roomba'
+    ui
+  end
 end
