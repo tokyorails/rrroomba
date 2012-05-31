@@ -14,6 +14,8 @@ class SimulationsController < ApplicationController
   # GET /simulations/1.json
   def show
     @simulation = Simulation.find(params[:id])
+    @world = session[:world]
+    @world = World.new
 
     respond_to do |format|
       format.html # show.html.erb
