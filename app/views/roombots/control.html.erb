@@ -27,6 +27,109 @@
   <!-- end breadcrumbs -->
   <h1><%= t('.title', :name => @roombot.name) %></h1>
   <div class="roombot_status scrollable well" id="roombot_replies"></div>
+  <div class="accordion" id="demos">
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#demos" href="#collapseOne">
+          Move
+        </a>
+      </div>
+      <div id="collapseOne" class="accordion-body in" style="height: auto; ">
+        <div class="accordion-inner">
+          <%= form_tag(command_roombot_path, :method => "get", :remote => true, :class => 'form-horizontal') do %>
+            <input type="hidden" name="address" value="<%= @roombot.location %>">
+            <input type="hidden" name="command" value="move">
+            <div class="control-group">
+              <%= label_tag(:distance, "Distance:", :class => 'control-label') %>
+              <div class="controls">
+                <div class="input-append">
+                  <%= text_field_tag :distance, 100, :class => 'text_field span1' %>
+                  <span class="add-on">mm</span>
+                </div>
+              </div>
+            </div>
+            <div class="control-group">
+              <%= label_tag :angle, "Angle:", :class => 'control-label' %>
+              <div class="controls">
+                <div class="input-append">
+                  <%= text_field_tag :angle, 0, :class => 'text_field span1' %>
+                  <span class="add-on">&#176;</span>
+                </div>
+              </div>
+            </div>
+            <div class="control-group">
+              <%= label_tag :velocity, "Velocity", :class => 'control-label' %>
+              <div class="controls">
+                <%= select_tag :velocity, options_for_select((-500..500).step(50).to_a.map{|s| ["#{s}", s]}.reverse!,200), :class => 'span2' %>
+              </div>
+            </div>
+            <div class="form-actions">
+              <%= submit_tag "Move!", :class => 'btn btn-primary' %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#demos" href="#collapseTwo">
+          Schedule
+        </a>
+      </div>
+      <div id="collapseTwo" class="accordion-body collapse" style="height: 0px; ">
+        <div class="accordion-inner">
+          <%= render 'schedule_form', :schedule => @roombot.schedule || @roombot.create_schedule %>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-group">
+      <div class="accordion-heading">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#demos" href="#collapseThree">
+          Various
+        </a>
+      </div>
+      <div id="collapseThree" class="accordion-body collapse">
+        <div class="accordion-inner">
+          <%= form_tag(command_roombot_path, :method => "get", :remote => true, :class => 'form-horizontal') do %>
+            <input type="hidden" name="address" value="<%= @roombot.location %>">
+            <input type="hidden" name="command" value="api_setup_control">
+            <div class="form-actions">
+              <%= submit_tag "Take Control", :class => 'btn btn-primary' %>
+            </div>
+          <% end %>
+
+          <%= form_tag(command_roombot_path, :method => "get", :remote => true, :class => 'form-horizontal') do %>
+            <input type="hidden" name="address" value="<%= @roombot.location %>">
+            <input type="hidden" name="command" value="motors">
+            <div class="form-actions">
+              <%= submit_tag "Motors", :class => 'btn btn-primary' %>
+            </div>
+          <% end %>
+
+          <%= form_tag(command_roombot_path, :method => "get", :remote => true, :class => 'form-horizontal') do %>
+            <input type="hidden" name="address" value="<%= @roombot.location %>">
+            <input type="hidden" name="command" value="midi">
+            <%= select_tag :one, options_for_select((31..107).step(1).to_a.map{|s| ["#{s}", s]},31), :class => 'span1' %>
+            <%= select_tag :two, options_for_select((31..107).step(1).to_a.map{|s| ["#{s}", s]},51), :class => 'span1' %>
+            <%= select_tag :three, options_for_select((31..107).step(1).to_a.map{|s| ["#{s}", s]},71), :class => 'span1' %>
+            <%= select_tag :four, options_for_select((31..107).step(1).to_a.map{|s| ["#{s}", s]},91), :class => 'span1' %>
+            <%= select_tag :five, options_for_select((31..107).step(1).to_a.map{|s| ["#{s}", s]},107), :class => 'span1' %>
+            <div class="form-actions">
+              <%= submit_tag "Midi", :class => 'btn btn-primary' %>
+            </div>
+          <% end %>
+
+          <%= form_tag(command_roombot_path, :method => "get", :remote => true, :class => 'form-horizontal') do %>
+            <input type="hidden" name="address" value="<%= @roombot.location %>">
+            <input type="hidden" name="command" value="demo1">
+            <div class="form-actions">
+              <%= submit_tag "Full Demo", :class => 'btn btn-primary' %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="span3">
   <div class="well">
@@ -39,6 +142,9 @@
       <div id="battery_bar" class="bar" style="width: 60%;"></div>
     </div>
     <center><span id="battery_charge">1</span> / <span id="battery_capacity">1</span></center>
+    <h6>Current</h6>
+    <h6><span id="current" class="label">.</span></h6>
+    <br />
     <h6>Temperature</h6>
     <h6><span id="temperature" class="label">ok</span></h6>
     <br />
@@ -47,54 +153,6 @@
   </div>
 </div>
 
-<div class="container-fluid">
-  <div class="row-fluid">
-    <div id="commands" class="span2">
-      <ul>
-        <li><%= link_to t('.move'), {:cmd => 'move'}, {:data => {:show => 'move'}} %></li>
-        <li><%= link_to t('.schedule'), {:cmd => 'schedule'}, {:data => {:show => 'schedule'}} %></li>
-      </ul>
-    </div>
-
-    <div id="move_cmd_panel" class="cmd_panel span10" style="display: <%= params[:cmd].blank? || params[:cmd] == 'move' ? 'block' : 'none' %>">
-  <%= form_tag(command_roombot_path, :method => "get", :remote => true, :class => 'form-horizontal') do %>
-    <input type="hidden" name="address" value="<%= @roombot.location %>">
-    <input type="hidden" name="command" value="move">
-    <div class="control-group">
-      <%= label_tag(:distance, "Distance:", :class => 'control-label') %>
-      <div class="controls">
-        <div class="input-append">
-          <%= text_field_tag :distance, 100, :class => 'text_field span1' %>
-          <span class="add-on">mm</span>
-        </div>
-      </div>
-    </div>
-    <div class="control-group">
-      <%= label_tag :angle, "Angle:", :class => 'control-label' %>
-      <div class="controls">
-        <div class="input-append">
-          <%= text_field_tag :angle, 0, :class => 'text_field span1' %>
-          <span class="add-on">&#176;</span>
-        </div>
-      </div>
-    </div>
-    <div class="control-group">
-      <%= label_tag :velocity, "Velocity", :class => 'control-label' %>
-      <div class="controls">
-        <%= select_tag :velocity, options_for_select((-500..500).step(50).to_a.map{|s| ["#{s}", s]}.reverse!,200), :class => 'span2' %>
-      </div>
-    </div>
-    <div class="form-actions">
-      <%= submit_tag "Move!", :class => 'btn btn-primary' %>
-    </div>
-  <% end %>
-    </div>
-
-    <div id="schedule_cmd_panel" class="cmd_panel span10" style="display: <%= params[:cmd] == 'schedule' ? 'block' : 'none' %>">
-      <%= render 'schedule_form', :schedule => @roombot.schedule || @roombot.create_schedule %>
-    </div>
-  </div>
-</div>
 <script type="text/javascript">
 $(document).ready(
   function(){
@@ -110,15 +168,15 @@ $(document).ready(
     setInterval(function(){
       $.ajax({
         url: "<%= command_roombot_path %>?address=<%= @roombot.location %>&command=report",
-        context: document.body
       });
-    }, 20000);
+    }, 15000);
   });
-  $(document).ready(
-    function(){
-    $.ajax({
-      url: "<%= command_roombot_path %>?address=<%= @roombot.location %>&command=report",
-      context: document.body
-    });
-    });
+$(document).ready(
+  function(){
+    setTimeout(function() {
+      $.ajax({
+        url: "<%= command_roombot_path %>?address=<%= @roombot.location %>&command=report",
+      });
+       }, 3000);
+  });
 </script>

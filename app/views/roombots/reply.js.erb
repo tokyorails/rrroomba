@@ -10,7 +10,7 @@ if !@replies.nil?
       reply.each do |key, report|
         next if key == :time
   %>
-    $('#roombot_replies').prepend("<span class='label label-info'>sensors</span><%= key.inspect %><%= report.inspect %><br />");
+    //$('#roombot_replies').prepend("<span class='label label-info'>sensors</span><%= key.inspect %><%= report.inspect %><br />");
     $('#<%= key.to_s %>').html("<%= report[:text] %>");
 
   <%

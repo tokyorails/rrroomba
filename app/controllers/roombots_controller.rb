@@ -101,7 +101,9 @@ class RoombotsController < ApplicationController
       @command = params[:command]
       case @command
       when "move"
-        command_string = ["move",params[:distance],params[:angle],params[:velocity]]
+        command_string = ["move",params[:distance].to_i,params[:angle].to_i,params[:velocity].to_i]
+      when "midi"
+        command_string = ["midi",params[:one].to_i,params[:two].to_i,params[:three].to_i,params[:four].to_i,params[:five].to_i]
       else
         command_string = [@command] if Roomba.method_defined? @command
       end
@@ -114,7 +116,8 @@ class RoombotsController < ApplicationController
       roomba_socket.close
     rescue Exception => e
       @label = "label-important"
-      @command = "Connection failed #{e}"
+      @command = "Connection failed #{e}. Restarting socket server..."
+      system "nohup ruby lib/roomba_socket_server.rb #{@roombot.location} &"
     end
   end
 

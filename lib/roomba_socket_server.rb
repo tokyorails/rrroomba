@@ -27,7 +27,7 @@ optparse = OptionParser.new do |opts|
     options[:port] = port
   end
 
-  options[:latency] = 0.1
+  options[:latency] = 0.3
   opts.on( '-l', '--latency', 'Specify the Roomba latency' ) do |latency|
     options[:latency] = latency
   end
@@ -72,24 +72,31 @@ loop do
     end
   end
   Thread.start(server.accept) do |client|
-    command_array = client.gets("$ROOMBA$").gsub("$ROOMBA$","").split("$RoR$")
-    #puts command_array.inspect
-    command = command_array.shift
-    if !command.nil?
-      idletime = Time.now
-      if command == "kill"
-        $roomba = nil
-        raise "killed by client"
+    begin
+      command_array = client.gets("$ROOMBA$").gsub("$ROOMBA$","").split("$RoR$")
+      #puts command_array.inspect
+      command = command_array.shift
+      if !command.nil?
+        idletime = Time.now
+        if command == "kill"
+          $roomba = nil
+          raise "killed by client"
+        end
+        if command == "messages"
+          client.puts($roomba.send("messages").inspect)
+        else
+          puts command_array.inspect
+          $roomba.send(command,*command_array.collect! {|v| eval v }) # Pass the command to the roomba
+        end
       end
-      if command == "messages"
-        client.puts($roomba.send("messages").inspect)
-      else
-        $roomba.send(command,*command_array.collect! {|v| eval v }) # Pass the command to the roomba
-      end
+    rescue
     end
     client.close# Disconnect from the client
   end
 end
-rescue
+rescue SyntaxError, NameError, StandardError, Exception => e
+  puts e
+  puts e.backtrace
+ensure
   $roomba = nil
 end

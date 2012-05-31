@@ -164,7 +164,11 @@ class Roomba
 
   # quick report of basic info, should break this out into individual method calls
   def report
-    sensors = get_readings(:temperature, :oi_mode, :charging_state, :battery_charge, :battery_capacity)
+    sensors = get_readings(:temperature, :oi_mode, :charging_source, :battery_charge, :battery_capacity, :current)
+    sensors[:temperature][:text] = sensors[:temperature][:formatted].to_s + " Celsius"
+    sensors[:battery_charge][:text] = sensors[:battery_charge][:formatted]
+    sensors[:battery_capacity][:text] = sensors[:battery_capacity][:formatted]
+    sensors[:current][:text] = sensors[:current][:formatted].to_s + " mA"
 
     sensors[:oi_mode][:text] = case sensors[:oi_mode][:formatted]
     when 0
@@ -177,11 +181,7 @@ class Roomba
       "full mode"
     end
 
-    sensors[:temperature][:text] = sensors[:temperature][:formatted].to_s + " Celsius"
-    sensors[:battery_charge][:text] = sensors[:battery_charge][:formatted]
-    sensors[:battery_capacity][:text] = sensors[:battery_capacity][:formatted]
-
-    sensors[:charging_state][:text] = case sensors[:charging_state][:formatted]
+    sensors[:charging_source][:text] = case sensors[:charging_source][:raw]
     when 1
       "charging"
     when 2
@@ -192,16 +192,12 @@ class Roomba
       "undocked"
     end
 
-    @messages.push sensors
+    if sensors[:battery_charge][:text] == 0
+
+    else
+      @messages.push sensors
+    end
     sensors
-  end
-
-  def battery
-
-  end
-
-  def temperature
-
   end
 
   def get_readings(*sensors_requested)
@@ -221,7 +217,7 @@ class Roomba
 
   def set_readings(sensor, readings)
     readings[0] = 0 if readings[0].nil?
-    if readings.size > 1
+    if SENSORS[sensor][:bytes] > 1
       readings[1] = 0 if readings[1].nil?
     end
     if SENSORS[sensor][:bits] #return a string representation of the bits
@@ -247,6 +243,25 @@ class Roomba
     end
   end
 
+  def motors
+    api_motors(1)
+    sleep 2
+    api_motors(2)
+    sleep 2
+    api_motors(4)
+    sleep 2
+    api_motors(3)
+    sleep 2
+    api_motors(7)
+    sleep 2
+    api_motors(0)
+  end
+
+  def midi(one, two, three, four, five)
+    api_song(2,5, one,64, two,48, three,36, four,30, five,36)
+    api_play(2)
+  end
+
   def demo1
     empire()
     api_play(0)
@@ -260,7 +275,7 @@ class Roomba
     api_motors(5)
     move(1400,0,-300)
     api_motors(0)
-    move(0,720,400)
+    move(0,720,300)
     move(0,720,-500)
     api_play(0)
     move(200,0,40)
@@ -271,9 +286,9 @@ class Roomba
     sleep 3
     api_setup_control
     sleep 1
-    api_spot
-    sleep 2
     api_dock
+    sleep 2
+    api_setup_control
   end
 
   def empire
@@ -295,11 +310,12 @@ class Roomba
   # expects a hash like: {:monday => '10:30', :tuesday => '14:00', ...}
   def schedule_cleaning(days={})
     return if days.empty?
+    days.delete_if {|key, value| !(SCHEDULE_DAYS.has_key? key.to_sym) }
     bytes = []
     bytes << days.keys.map{|d| SCHEDULE_DAYS[d.to_sym]}.inject(0){|res,b| res | b.to_i(2)} # bitwise OR the days to make the first byte of the schedule command
     SCHEDULE_DAYS.keys.each do |day| # ruby 1.9 keeps the hash order so it should be ok but it might not work as expected in 1.8
       time = days[day] || days[day.to_s]  # accept both strings and symbols as keys
-      bytes.concat(time.present? ? time.split(':').map(&:to_i) : [0,0])
+      bytes.concat(time && !time.empty? ? time.split(':').map(&:to_i) : [0,0])
     end
     api_schedule(bytes)
     bytes
