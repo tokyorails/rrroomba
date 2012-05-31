@@ -14,7 +14,8 @@ class SimulationsController < ApplicationController
   # GET /simulations/1.json
   def show
     @simulation = Simulation.find(params[:id])
-    @world = session[:world]
+
+    #this is super crap, just for debugging ATM, moving out soon
     @world = World.new
 
     respond_to do |format|

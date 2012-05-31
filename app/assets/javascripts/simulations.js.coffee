@@ -15,19 +15,12 @@ jQuery ->
   world_height = world.boundaries[2] - world.boundaries[3]
 
   #we take some drawing space for the walls
-  scale_x = (world_ui.width() - 8)  / world_width
-  scale_y = (world_ui.height() - 8) / world_height
+  scale_x = world_ui.width()  / world_width
+  scale_y = world_ui.height() / world_height
 
-  draw_boundaries(context, world_ui)
   draw_objects(context, world.obstacles)
   draw_robot(context, world.robot)
 
-draw_boundaries = (context, world_ui) ->
-  context.strokeStyle = '#000'
-  context.lineWidth   = 4
-  #strokes spand from the center to the sides, for multiline we need to give
-  #them room
-  context.strokeRect(2, 2,  636, 476)
 
 draw_objects = (context, objects) ->
   context.strokeStyle = '#00f'
