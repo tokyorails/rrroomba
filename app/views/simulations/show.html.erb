@@ -21,3 +21,9 @@
               :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')),
               :class => 'btn btn-danger' %>
 </div>
+
+<div id="world_data" data-world="<%= @world.render %>">
+  <canvas id="world_ui" width="640" height="480">
+    This browser can not run this simulation (canvas support missing).
+  </canvas>
+</div>

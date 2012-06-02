@@ -1,5 +1,5 @@
 class RoombaSerialSimulation < Roomba
-  attr_accessor :simulation, :requested_readings, :readings, :x, :y, :facing, :boundaries, :obstacles, :moving, :velocity, :turning, :degree, :timestamp
+  attr_accessor :simulation, :requested_readings, :readings, :x, :y, :facing, :moving, :velocity, :turning, :degree, :timestamp
   ROOMBA_RADIUS = 176
 
   # currently the simulation settings are hardcoded in the initializer
@@ -13,8 +13,6 @@ class RoombaSerialSimulation < Roomba
     @x ||= 0
     @y ||= 0
     @facing ||= 0 #+y, @facing of 90 == +x, @facing of 180 == -y, @facing of 270 == -x
-    @boundaries ||= [1000, -1000, 800, -800]#x,-x, y, -y
-    @obstacles ||= [[0, 500, 20],[300, 0, 20],[-900, -700, 10]]#[x,y,radius]
 
     # The following are not to be set by the user
     @moving = false
@@ -22,6 +20,7 @@ class RoombaSerialSimulation < Roomba
     @degree = 0
     @turning = false
     @readings = []
+    @world = nil  # our virtual world
   end
 
 
@@ -71,16 +70,12 @@ class RoombaSerialSimulation < Roomba
     return @moving
   end
 
-  def obstacle?
-    if (@boundaries[0] - @x).abs == ROOMBA_RADIUS || (@boundaries[1] - @x).abs == ROOMBA_RADIUS || (@boundaries[2] - @y).abs == ROOMBA_RADIUS || (@boundaries[3] - @y).abs == ROOMBA_RADIUS
-      return true
-    end
-    @obstacles.each do |z|
-      distance = Math.sqrt((@x - z[0])**2 + (@y - z[1])**2) # Pythagoras, miss you buddy. RIP
-      #puts "Distance to obstacle: #{distance}mm"
-      return true if distance <= (z[2] + ROOMBA_RADIUS)
-    end
-    false
+  def radius
+    ROOMBA_RADIUS
+  end
+
+  def born_in (world)
+    @world = world
   end
 
   def prepare_readings(*args)
@@ -129,7 +124,7 @@ class RoombaSerialSimulation < Roomba
             @x = @x-1
           end
           puts "N:#{@facing}, X:#{@x} Y:#{@y}"
-          reading = (obstacle?) ? 1 : 0
+          reading = (@world.collision_with?(self)) ? 1 : 0
           break if reading == 1
         end
       else #driving backward, driving blind (no sensors!)
@@ -147,7 +142,7 @@ class RoombaSerialSimulation < Roomba
             @x = @x+1
           end
           puts "N:#{@facing}, X:#{@x} Y:#{@y}"
-          blind_reading = (obstacle?) ? 1 : 0
+          blind_reading = (@world.collision_with?(self)) ? 1 : 0
           break if blind_reading == 1
         end
         reading = 0 #always return 0 when driving blind
