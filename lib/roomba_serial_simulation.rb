@@ -78,18 +78,6 @@ class RoombaSerialSimulation < Roomba
     @world = world
   end
 
-  def obstacle?
-    if (@boundaries[0] - @x).abs == ROOMBA_RADIUS || (@boundaries[1] - @x).abs == ROOMBA_RADIUS || (@boundaries[2] - @y).abs == ROOMBA_RADIUS || (@boundaries[3] - @y).abs == ROOMBA_RADIUS
-      return true
-    end
-    @obstacles.each do |z|
-      distance = Math.sqrt((@x - z[0])**2 + (@y - z[1])**2) # Pythagoras, miss you buddy. RIP
-      #puts "Distance to obstacle: #{distance}mm"
-      return true if distance <= (z[2] + ROOMBA_RADIUS)
-    end
-    false
-  end
-
   def prepare_readings(*args)
     args.each do |request|
       SENSORS.each do |sensor|

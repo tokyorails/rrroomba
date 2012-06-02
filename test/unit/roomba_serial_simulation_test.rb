@@ -35,14 +35,6 @@ describe RoombaSerialSimulation do
       roomba_serial.facing.must_equal 0
     end
 
-    it "should set the boundaries" do
-      roomba_serial.boundaries.must_equal [1000, -1000, 800, -800]
-    end
-
-    it "should set the obstacles" do
-      roomba_serial.obstacles.must_equal [[0, 500, 20],[300, 0, 20],[-900, -700, 10]]
-    end
-
   end
 
   describe 'config block initialization' do
@@ -53,8 +45,6 @@ describe RoombaSerialSimulation do
          config.x = 5
          config.y = 5
          config.facing = 90
-         config.boundaries = [2000, -2000, 1600, -1600]
-         config.obstacles = [[0, 700, 20],[500, 0, 20],[-600, -700, 10]]
       end
     end
 
@@ -76,14 +66,6 @@ describe RoombaSerialSimulation do
 
     it "should set the facing" do
       roomba_serial.facing.must_equal 90
-    end
-
-    it "should set the boundaries" do
-      roomba_serial.boundaries.must_equal [2000, -2000, 1600, -1600]
-    end
-
-    it "should set the obstacles" do
-      roomba_serial.obstacles.must_equal [[0, 700, 20],[500, 0, 20],[-600, -700, 10]]
     end
 
   end

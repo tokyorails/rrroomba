@@ -14,7 +14,6 @@ jQuery ->
   world_width = world.boundaries[0] - world.boundaries[1]
   world_height = world.boundaries[2] - world.boundaries[3]
 
-  #we take some drawing space for the walls
   scale_x = world_ui.width()  / world_width
   scale_y = world_ui.height() / world_height
 

@@ -25,11 +25,16 @@ class World
     robot.serial.born_in self
   end
 
+  def robot (index = 0 )
+    @robots[index]
+  end
 
-  def collision_with?(robot)
-    x = robot.x
-    y = robot.y
-    radius = robot.radius
+
+  #TODO: collision with a serial it is not very intuitive
+  def collision_with?(serial)
+    x = serial.x
+    y = serial.y
+    radius = serial.radius
 
     if (@boundaries[0] - x).abs == radius || (@boundaries[1] - x).abs == radius || (@boundaries[2] - y).abs == radius || (@boundaries[3] - y).abs == radius
       return true
