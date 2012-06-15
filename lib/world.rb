@@ -5,9 +5,10 @@
 ##############################
 class World
 
-  def initialize
+  def initialize roombot
     @robots = []
     read_world
+    add_robot roombot
   end
 
   def render
@@ -20,9 +21,9 @@ class World
     world_ui.to_json
   end
 
-  def addRobot(robot)
+  def add_robot(robot)
     @robots.push robot
-    robot.serial.born_in self
+    robot.born_in self
   end
 
   def robot (index = 0 )
@@ -54,8 +55,6 @@ class World
 
     @boundaries ||= [1000, -1000, 800, -800]#x,-x, y, -y
     @obstacles ||= [{x:0, y:500, radius:20}, {x:300, y:0, radius:20},{x:-900, y:-700, radius:10}]
-    @robot = RoombaSimulation.new # our mighty friend, some day we may have many!
-    addRobot @robot
 
   end
 

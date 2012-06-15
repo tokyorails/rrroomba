@@ -8,7 +8,7 @@ describe World do
   describe 'basic initialization' do
 
     let(:world) do
-       World.new
+       RoombaSimulation.new.serial.world
     end
 
     it "creates an instance" do
@@ -16,7 +16,7 @@ describe World do
     end
 
     it "should create a default robot" do
-      world.robot.must_be_instance_of RoombaSimulation
+      world.robot.must_be_instance_of RoombaSerialSimulation
     end
 
     it "should not create more than 1 initial robot" do
@@ -24,7 +24,7 @@ describe World do
     end
 
     it "should not start a robot colliding with some obstacle" do
-      world.collision_with?(world.robot.serial).must_equal false
+      world.collision_with?(world.robot).must_equal false
     end
 
     it "should render the boundaries" do

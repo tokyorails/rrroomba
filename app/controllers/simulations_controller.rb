@@ -16,7 +16,7 @@ class SimulationsController < ApplicationController
     @simulation = Simulation.find(params[:id])
 
     #this is super crap, just for debugging ATM, moving out soon
-    @world = World.new
+    @world = RoombaSimulation.new.serial.world
 
     respond_to do |format|
       format.html # show.html.erb

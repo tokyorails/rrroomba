@@ -1,5 +1,5 @@
 class RoombaSerialSimulation < Roomba
-  attr_accessor :simulation, :requested_readings, :readings, :x, :y, :facing, :moving, :velocity, :turning, :degree, :timestamp
+  attr_accessor :simulation, :requested_readings, :readings, :x, :y, :facing, :moving, :velocity, :turning, :degree, :timestamp, :world
   ROOMBA_RADIUS = 176
 
   # currently the simulation settings are hardcoded in the initializer
@@ -20,7 +20,7 @@ class RoombaSerialSimulation < Roomba
     @degree = 0
     @turning = false
     @readings = []
-    @world = nil  # our virtual world
+    @world = World.new self # our virtual world
   end
 
 
@@ -76,6 +76,15 @@ class RoombaSerialSimulation < Roomba
 
   def born_in (world)
     @world = world
+  end
+
+  def render
+    ui = {}
+    ui['x'] = x
+    ui['y'] = y
+    ui['radius'] = radius
+    ui['name'] = 'Roomba'
+    ui
   end
 
   def prepare_readings(*args)
