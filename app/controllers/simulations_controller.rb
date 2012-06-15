@@ -15,6 +15,9 @@ class SimulationsController < ApplicationController
   def show
     @simulation = Simulation.find(params[:id])
 
+    #this is super crap, just for debugging ATM, moving out soon
+    @world = World.new
+
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @simulation }
