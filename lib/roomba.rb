@@ -77,7 +77,7 @@ class Roomba
   def initialize(port, latency=0.1, baud=115200, serial=nil)
     # baud must be 115200 for communicating with 500 series Roomba and newer (tested with Roomba 770), change to 57600 for 400 series and older
     if serial.nil? # we need to provide our own serial
-      setup_default_serial
+      setup_default_serial(port, baud)
     else
       @serial = serial
     end
@@ -89,7 +89,7 @@ class Roomba
     api_setup_control
   end
 
-  def setup_default_serial
+  def setup_default_serial(port, baud)
     if port[/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\:[0-9]{1,5}/]
       require 'socket'
       @serial = TCPSocket.open(port.split(":")[0], port.split(":")[1])
