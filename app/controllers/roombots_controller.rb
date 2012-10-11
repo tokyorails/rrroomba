@@ -94,6 +94,7 @@ class RoombotsController < ApplicationController
   end
 
   def command
+    @roombot = Roombot.find(params[:id])
     begin
       roomba_socket = TCPSocket.open("localhost",3001)
       command_string = []

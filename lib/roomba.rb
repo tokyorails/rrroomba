@@ -87,6 +87,7 @@ class Roomba
     api_setup_start
     sleep 0.1
     api_setup_control
+    self
   end
 
   def setup_default_serial(port, baud)

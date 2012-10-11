@@ -20,7 +20,7 @@ class RoombaSerialSimulation < Roomba
     @degree = 0
     @turning = false
     @readings = []
-    @world = World.new self # our virtual world
+    self
   end
 
 
@@ -74,7 +74,7 @@ class RoombaSerialSimulation < Roomba
     ROOMBA_RADIUS
   end
 
-  def born_in (world)
+  def born_in(world)
     @world = world
   end
 
