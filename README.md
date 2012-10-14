@@ -29,7 +29,8 @@ Jump in console and give the basic simulation a shot.
 
 ````ruby
 $ rails c
-:001 > earth = World.new
+:001 > simulator = Simulator.new
+:001 > earth = simulator.world
 :002 > roo = RoombaSimulation.new
 :003 > earth.spawn(roo)
 :004 > roo.move(100)

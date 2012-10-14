@@ -4,6 +4,7 @@
 #
 ##############################
 class World
+  attr_accessor :time
 
   def initialize(*roombots)
     @robots = []
@@ -32,6 +33,15 @@ class World
   def robot(index=0)
     @robots[index]
   end
+  
+  def step (time_step)
+    @robots.each do |robot|
+      robot.step(time_step)
+      if collision_with?(robot)
+        robot.step_back
+      end
+    end
+  end
 
 
   #TODO: collision with a serial it is not very intuitive
@@ -51,12 +61,12 @@ class World
   end
 
   private
+  
   def read_world
-  #TODO: read from external .yml or something
-  #TODO: mass and shape for the obstacles
+    #TODO: read from external .yml or something
+    #TODO: mass and shape for the obstacles
     @boundaries ||= [1000, -1000, 800, -800]#x,-x, y, -y
     @obstacles ||= [{x:0, y:500, radius:20}, {x:300, y:0, radius:20},{x:-900, y:-700, radius:10}]
-
   end
 
 end

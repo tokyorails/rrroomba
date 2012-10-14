@@ -16,4 +16,15 @@ class RoombaSimulation < Roomba
   def write(*args)
     @serial.write(*args)
   end
+  
+  #makes roomba use our virtual time
+  def current_time
+    @serial.world.time
+  end
+
+  def method_missing(method, *args)
+    #we will raise if the method is not there either
+    return @serial.send(method, *args) 
+  end
+
 end
