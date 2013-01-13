@@ -30,12 +30,12 @@ Jump in console and give the basic simulation a shot.
 ````ruby
 $ rails c
 :001 > simulator = Simulator.new
-:001 > earth = simulator.world
 :002 > roo = RoombaSimulation.new
-:003 > earth.spawn(roo)
-:004 > roo.move(100)
-:005 > roo.move(0,120)
-:006 > roo.move(1000)
+:003 > simulator.add_robot(roo)
+:004 > simulator.start
+:005 > roo.move(100)
+:006 > roo.move(0,120)
+:007 > roo.move(1000)
 ````
 You should end up with a bump reading at N:90, X:126 Y:89
 
