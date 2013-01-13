@@ -74,7 +74,6 @@ class RoombaSerialSimulation
   def step(step_time)
     if !@turning
       distance = (@velocity * step_time).to_i
-      puts "Travelled #{distance}mm"
       @previous_x = @x
       @previous_y = @y
       move_to(@facing, distance)
@@ -165,7 +164,11 @@ class RoombaSerialSimulation
   # environment can leverage the same current X,Y coordinates
   def prepare_reading_7
     # TODO: distinguish collisions with bumpers and not bumpers
-    @readings.push  (@world.collision_with?(self)) ? 1 : 0
+    if @world.collision.with?(self)
+      @readings.push 1
+    else
+      @readings.push 0
+    end
   end
 
 end
