@@ -7,12 +7,11 @@ class RoombaSerialSimulation
 
   # currently the simulation settings are hardcoded in the initializer
   # need to refactor to allow various predefined or even random simulations
-  def initialize
+  def initialize(formatter = nil)
     yield self if block_given?
 
     # Set defaults if not set in the initializer block
     # These defaults match the previously hard-coded values
-    @simulation ||= 'simulation'
     @x ||= 0
     @y ||= 0
     @facing ||= 0 #+y, @facing of 90 == +x, @facing of 180 == -y, @facing of 270 == -x
@@ -23,6 +22,7 @@ class RoombaSerialSimulation
     @degree = 0
     @turning = false
     @readings = []
+    @formatter = formatter || Console.new
     self
   end
 
@@ -40,7 +40,7 @@ class RoombaSerialSimulation
   # if a method exists for handling that opcode, run it; Need to write mock
   # methods for each useful ROI command
   def write(*bytes)
-    puts "Bytes Roomba received: #{bytes.inspect}"
+    @formatter.debug "Bytes Roomba received: #{bytes.inspect}"
     command = bytes.shift
     case command
     when 137
@@ -77,10 +77,10 @@ class RoombaSerialSimulation
       @previous_x = @x
       @previous_y = @y
       move_to(@facing, distance)
-      puts "N: #@facing, x: #@x, y: #@y"
+      @formatter.debug "N: #@facing, x: #@x, y: #@y"
     else
       @facing = @facing + calculate_spin_degree(@velocity, step_time)
-      puts "N:#@facing"
+      @formatter.debug "N:#@facing"
     end
   end
 
@@ -109,9 +109,9 @@ class RoombaSerialSimulation
     @velocity = signed_integer([args[0], args[1]])
     @moving = (@velocity.abs > 0) ? true : false
     if @moving
-      puts "Moving at #{@velocity}mm/s"
+      @formatter.debug "Moving at #{@velocity}mm/s"
     else
-      puts "Stopped moving"
+      @formatter.debug "Stopped moving"
     end
     @degree = signed_integer([args[2], args[3]])
     @turning = (@degree.abs == 1) ? true : false

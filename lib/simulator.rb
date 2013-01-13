@@ -9,8 +9,9 @@ class Simulator
   attr_reader :world
   STEP = 0.01
 
-  def initialize(world = nil)
+  def initialize(world = nil, formatter = nil)
     @world = world || World.new
+    @formatter = formatter || Console.new
     @current_time = Time.now
   end
 
@@ -34,14 +35,14 @@ class Simulator
   private
   def run
     @wants_to_stop = false
-    puts "Simulation started"
+    @formatter.info "Simulation started"
     while (!@wants_to_stop)
       @world.step(STEP)
       sleep(STEP)
       @current_time += STEP
       @world.time = @current_time
     end
-    puts "Simulation terminated"
+    @formatter.info "Simulation terminated"
   end
 
 end
