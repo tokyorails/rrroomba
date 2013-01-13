@@ -1,5 +1,5 @@
-if [ -f "$0".local ]; then
-  source "$0".local
+if [ -f .rvmrc.local ]; then
+  source .rvmrc.local
 else
   rvm use 1.9.3
 fi
