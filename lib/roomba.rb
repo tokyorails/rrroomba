@@ -133,6 +133,8 @@ class Roomba
     sensors
   end
 
+  #This is overwritten in the roomba_simulation so we can use simulation
+  #time instead of real world time.
   def current_time
     Time.now
   end

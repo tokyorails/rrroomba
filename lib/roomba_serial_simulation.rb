@@ -73,7 +73,7 @@ class RoombaSerialSimulation
 
   def step(step_time)
     if !@turning
-      distance = (@velocity * step_time).to_i
+      distance = @velocity * step_time
       @previous_x = @x
       @previous_y = @y
       move_to(@facing, distance)

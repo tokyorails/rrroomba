@@ -44,11 +44,10 @@ class World
   end
 
 
-  #TODO: collision with a serial it is not very intuitive
-  def collision_with?(serial)
-    x = serial.x
-    y = serial.y
-    radius = serial.radius
+  def collision_with?(robot)
+    x = robot.x
+    y = robot.y
+    radius = robot.radius
 
     if (@boundaries[0] - x).abs == radius || (@boundaries[1] - x).abs == radius || (@boundaries[2] - y).abs == radius || (@boundaries[3] - y).abs == radius
       return true
@@ -61,7 +60,7 @@ class World
   end
 
   private
-  
+
   def read_world
     #TODO: read from external .yml or something
     #TODO: mass and shape for the obstacles
