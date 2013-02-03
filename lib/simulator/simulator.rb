@@ -19,11 +19,6 @@ class Simulator
   end
 
   #TODO: should these methods add ! because they modify the simulation ?
-  def add_robot(robot)
-    @world.spawn(robot)
-    self
-  end
-
   def start
     @running = true
     Thread.abort_on_exception = true

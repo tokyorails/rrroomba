@@ -27,7 +27,6 @@ class World
 
   def spawn(robot)
     @robots.push(robot)
-    robot.born_in self
   end
 
   def robot(index=0)

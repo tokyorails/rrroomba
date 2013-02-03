@@ -13,12 +13,15 @@ class SimulationsController < ApplicationController
   # GET /simulations/1
   # GET /simulations/1.json
   def show
+    #TODO: serialize/deserialize sim from DB
     @simulation = Simulation.find(params[:id])
+    # TODO: This is confusing
+    # Watch out! Simulator != Simulation . 
+    simulator = Simulator.new
+    @world = simulator.world
 
     #this is super crap, just for debugging ATM, moving out soon
-    @world = World.new
-    @roombot = RoombaSimulation.new
-    @world.spawn(@roombot)
+    @roombot = RoombaSimulation.new(simulator)
 
     respond_to do |format|
       format.html # show.html.erb

@@ -30,8 +30,7 @@ Jump in console and give the basic simulation a shot.
 ````ruby
 $ rails c
 :001 > simulator = Simulator.new
-:002 > roo = RoombaSimulation.new
-:003 > simulator.add_robot(roo)
+:002 > roo = RoombaSimulation.new(simulator)
 :004 > simulator.start
 :005 > roo.move(100)
 :006 > roo.move(0,120)
