@@ -4,14 +4,10 @@
 #
 ##############################
 class World
-  attr_accessor :time
 
-  def initialize(*roombots)
+  def initialize
     @robots = []
     read_world
-    roombots.each do |bot|
-      spawn(bot)
-    end
     self
   end
 
@@ -25,14 +21,16 @@ class World
     world_ui.to_json
   end
 
-  def spawn(robot)
-    @robots.push(robot)
+  def spawn(*robots)
+    robots.each do |bot|
+      @robots.push(bot)
+    end
   end
 
   def robot(index=0)
     @robots[index]
   end
-  
+
   def step (time_step)
     @robots.each do |robot|
       robot.step(time_step)

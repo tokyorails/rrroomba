@@ -8,14 +8,13 @@ require 'world'
 #
 ###############################
 class Simulator
-  attr_reader :world
+  attr_reader :world, :current_time, :formatter
 
-  def initialize(world = nil, formatter = nil)
-    @world = world || World.new
-    @formatter = formatter || Console.new
+  def initialize(formatter = nil)
     @current_time = Time.now
+    @formatter = formatter || Console.new
+    @world = World.new
     @running = false
-    @world.time = @current_time
   end
 
   #TODO: should these methods add ! because they modify the simulation ?
@@ -42,12 +41,12 @@ class Simulator
   def run
     @formatter.info "Simulation started"
     while (@running)
+      @current_time += STEP
       @world.step(STEP)
       sleep(STEP)
-      @current_time += STEP
-      @world.time = @current_time
     end
     @formatter.info "Simulation terminated"
   end
 
 end
+

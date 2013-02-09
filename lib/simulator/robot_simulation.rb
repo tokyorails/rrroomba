@@ -8,7 +8,7 @@
 class RobotSimulation
   attr_reader :facing
 
-  def initialize(world, serial, real_robot)
+  def initialize(world, serial, real_robot, formatter = nil)
     raise "A virtual robot needs virtual hardware" if serial.nil?
     raise "A virtual robot needs a real robot implementation" if real_robot.nil?
     raise "A virtual robot needs a simulation" if world.nil?
@@ -25,7 +25,7 @@ class RobotSimulation
     @facing ||= 0 # @facing=0 => +y, @facing=90 => +x, @facing=180 => -y, @facing=270 => -x
     @previous_x = @previous_y = 0
     #TODO: formatter has to be a singleton everyone can use
-    @formatter = Console.new
+    @formatter = formatter || Console.new
   end
 
   def radius
@@ -64,12 +64,6 @@ class RobotSimulation
     @y.round
   end
 
-  #TODO: move this to a class and pass it in a constructor to the real
-  #robot
-  #makes roomba use our virtual time
-  def current_time
-    @serial.world.time
-  end
 
   #TODO: this method could have a better name
   def got_collitions?
