@@ -5,12 +5,9 @@
 ##############################
 class World
 
-  def initialize(*roombots)
+  def initialize
     @robots = []
     read_world
-    roombots.each do |bot|
-      spawn(bot)
-    end
     self
   end
 
@@ -24,21 +21,30 @@ class World
     world_ui.to_json
   end
 
-  def spawn(robot)
-    @robots.push(robot)
-    robot.born_in self
+  def spawn(*robots)
+    robots.each do |bot|
+      @robots.push(bot)
+    end
   end
 
   def robot(index=0)
     @robots[index]
   end
 
+  def step (time_step)
+    @robots.each do |robot|
+      robot.step(time_step)
+      if collision_with?(robot)
+        robot.step_back
+      end
+    end
+  end
 
-  #TODO: collision with a serial it is not very intuitive
-  def collision_with?(serial)
-    x = serial.x
-    y = serial.y
-    radius = serial.radius
+
+  def collision_with?(robot)
+    x = robot.x
+    y = robot.y
+    radius = robot.radius
 
     if (@boundaries[0] - x).abs == radius || (@boundaries[1] - x).abs == radius || (@boundaries[2] - y).abs == radius || (@boundaries[3] - y).abs == radius
       return true
@@ -51,12 +57,12 @@ class World
   end
 
   private
+
   def read_world
-  #TODO: read from external .yml or something
-  #TODO: mass and shape for the obstacles
+    #TODO: read from external .yml or something
+    #TODO: mass and shape for the obstacles
     @boundaries ||= [1000, -1000, 800, -800]#x,-x, y, -y
     @obstacles ||= [{x:0, y:500, radius:20}, {x:300, y:0, radius:20},{x:-900, y:-700, radius:10}]
-
   end
 
 end
