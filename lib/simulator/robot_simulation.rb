@@ -22,7 +22,7 @@ class RobotSimulation
     # These defaults match the previously hard-coded values
     @x ||= 0
     @y ||= 0
-    @facing ||= 0 #+y, @facing of 90 == +x, @facing of 180 == -y, @facing of 270 == -x
+    @facing ||= 0 # @facing=0 => +y, @facing=90 => +x, @facing=180 => -y, @facing=270 => -x
     @previous_x = @previous_y = 0
     #TODO: formatter has to be a singleton everyone can use
     @formatter = Console.new
@@ -78,17 +78,13 @@ class RobotSimulation
 
   private
 
+  def degrees_to_radians(degrees)
+    degrees * Math::PI / 180 
+  end
+
   def move_to(direction, distance)
-    case direction
-    when 0
-      @y += distance
-    when 90
-      @x += distance
-    when 180
-      @y -= distance
-    when 270
-      @x -= distance
-    end
+    @y += distance * Math.cos(degrees_to_radians(direction))
+    @x += distance * Math.sin(degrees_to_radians(direction))
   end
 
   def method_missing(method, *args)

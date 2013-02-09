@@ -37,7 +37,7 @@ class Simulator
 
   private
 
-  STEP = 0.1
+  STEP = 0.01
 
   def run
     @formatter.info "Simulation started"

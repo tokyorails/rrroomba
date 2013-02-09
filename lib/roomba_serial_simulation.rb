@@ -108,24 +108,6 @@ class RoombaSerialSimulation
     @degree = signed_integer([args[2], args[3]])
     @turning = (@degree.abs == 1) ? true : false
 
-=begin
-  #TODO: I think this is about degree, not about facing.
-  #We do not support this at this moment. So either rotate over yourself or do not rotate
-
-    # Simulation can currently only handle the following (cannot support half-points or curves)
-    if @facing.between?(45, 135)
-      @facing = 90
-    elsif @facing.between?(135, 225)
-      @facing = 180
-    elsif @facing.between?(225, 315)
-      @facing = 270
-    else
-      @facing = 0
-    end
-    if @velocity < 0 && @fading != 0
-      @facing = 360 - @facing
-    end
-=end
     return true
   end
 
