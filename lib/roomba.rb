@@ -217,7 +217,7 @@ class Roomba
       readings[sensor] = {:raw => nil, :formatted => []}
       readings[sensor][:raw] = bytes.shift(SENSORS[sensor][:bytes])
       readings[sensor][:formatted] = set_readings(sensor, readings[sensor][:raw])
-      puts "Sensors: #{readings[sensor].inspect}"
+      #puts "Sensors: #{readings[sensor].inspect}"
     end
     readings #return hash of readings
   end
