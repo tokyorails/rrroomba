@@ -20,10 +20,7 @@ class RobotSimulation
 
     # Set defaults if not set in the initializer block
     # These defaults match the previously hard-coded values
-    @x ||= 0
-    @y ||= 0
-    @facing ||= 0 # @facing=0 => +y, @facing=90 => +x, @facing=180 => -y, @facing=270 => -x
-    @previous_x = @previous_y = 0
+    @pose = Pose.new(Position.new(0,0),0)
     #TODO: formatter has to be a singleton everyone can use
     @formatter = formatter || Console.new
   end
@@ -33,37 +30,28 @@ class RobotSimulation
   end
 
   def step(step_time)
-    @previous_x = @x
-    @previous_y = @y
-    @facing = @facing + @serial.calculate_rotation(step_time)
-    distance = @serial.calculate_distance(step_time)
-    move_to(@facing, distance)
-    @formatter.debug "N: #@facing, x: #@x, y: #@y"
+    @previous_pose = @pose.dup
+    @pose = @pose.advance(@serial.calculate_distance(step_time), @serial.calculate_rotation(step_time))
+    @formatter.debug "#@pose"
   end
 
   #TODO: this is fugly, should be a better way to stop on obstacles
   def step_back
-    @x = @previous_x
-    @y = @previous_y
+    @pose = @previous_pose.dup
   end
 
   def render
     ui = {}
-    ui['x'] = x
-    ui['y'] = y
+    ui['x'] = @pose.position.x
+    ui['y'] = @pose.position.y
     ui['radius'] = radius
     ui['name'] = 'Roomba'
     ui
   end
 
-  def x
-    @x.round
+  def pos
+    @pose.position.round
   end
-
-  def y
-    @y.round
-  end
-
 
   #TODO: this method could have a better name
   def got_collitions?
@@ -71,15 +59,6 @@ class RobotSimulation
   end
 
   private
-
-  def degrees_to_radians(degrees)
-    degrees * Math::PI / 180 
-  end
-
-  def move_to(direction, distance)
-    @y += distance * Math.cos(degrees_to_radians(direction))
-    @x += distance * Math.sin(degrees_to_radians(direction))
-  end
 
   def method_missing(method, *args)
     #we will raise if the method is not there either
