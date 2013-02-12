@@ -1,18 +1,18 @@
 # #####################
 # This class is an abstract interface for simulated robots
 # it can not be used directly
-# Child classes need to call the initializer with a serial and a the
+# Child classes need to call the initializer with a driver and a the
 # class which drives the robot.
 # They need also to implement radius so we know its geometry
 # ###################
 class RobotSimulation
   attr_reader :facing
 
-  def initialize(world, serial, real_robot, formatter = nil)
-    raise "A virtual robot needs virtual hardware" if serial.nil?
+  def initialize(world, driver, real_robot, formatter = nil)
+    raise "A virtual robot needs virtual hardware" if driver.nil?
     raise "A virtual robot needs a real robot implementation" if real_robot.nil?
     raise "A virtual robot needs a simulation" if world.nil?
-    @serial = serial
+    @driver = driver
     @real_robot = real_robot
     @world = world
 
@@ -31,7 +31,7 @@ class RobotSimulation
 
   def step(step_time)
     @previous_pose = @pose.dup
-    @pose = @pose.advance(@serial.calculate_distance(step_time), @serial.calculate_rotation(step_time))
+    @pose = @pose.advance(@driver.calculate_distance(step_time), @driver.calculate_rotation(step_time))
     @formatter.debug "#@pose"
   end
 
@@ -51,11 +51,6 @@ class RobotSimulation
 
   def pos
     @pose.position.round
-  end
-
-  #TODO: this method could have a better name
-  def got_collitions?
-    @world.collision.with?(@virtual_roomba)
   end
 
   private

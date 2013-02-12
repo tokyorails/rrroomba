@@ -5,7 +5,7 @@ class RoombaSerialSimulation
 
   # currently the simulation settings are hardcoded in the initializer
   # need to refactor to allow various predefined or even random simulations
-  def initialize(virtual_roomba = nil, formatter = nil)
+  def initialize(bumper, formatter = nil)
     # The following are not to be set by the user
     @moving = false
     @velocity = 0
@@ -13,7 +13,7 @@ class RoombaSerialSimulation
     @turning = false
     @readings = []
     @formatter = formatter || Console.new
-    @virtual_roomba = virtual_roomba # TODO: only used to check collitions, may go to bumper in the future.
+    @bumper = bumper
     @waiting_bytes = 0
     @command_bytes = []
     self
@@ -112,12 +112,12 @@ class RoombaSerialSimulation
   end
 
   def prepare_readings(*args)
-    args.each do |request|
+    args.first.each do |request|
       Roomba::SENSORS.each do |sensor|
         if sensor[1][:packet] == request
-          if respond_to? "prepare_reading_#{request}".to_sym
+          begin
             send("prepare_reading_#{request}".to_sym)
-          else
+          rescue NameError
             1.upto(sensor[1][:bytes]) { @readings.push(0) }
           end
         end
@@ -131,7 +131,7 @@ class RoombaSerialSimulation
   # environment can leverage the same current X,Y coordinates
   def prepare_reading_7
     # TODO: distinguish collisions with bumpers and not bumpers
-    if @virtual_roomba.got_collisions?
+    if @bumper.got_collisions?
       @readings.push 1
     else
       @readings.push 0

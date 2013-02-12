@@ -4,7 +4,7 @@
 class RoombaSimulation  < RobotSimulation
   def initialize(simulation)
     world = simulation.world
-    serial = RoombaSerialSimulation.new
+    serial = RoombaSerialSimulation.new(Bumper.new(self, world))
     modify_roomba_internals(simulation)
     real_robot = Roomba.new('simulation', 0, 115200, serial)
     world.spawn(self)
@@ -27,9 +27,6 @@ class RoombaSimulation  < RobotSimulation
     Roomba.send(:define_method, :current_time) do
       simulation.current_time
     end
-    #Same step than the simulation
-    Roomba.send(:remove_const, :ROOMBA_DATA_REFRESH_RATE)
-    Roomba.const_set(:ROOMBA_DATA_REFRESH_RATE, 0.01)
   end
 end
 
