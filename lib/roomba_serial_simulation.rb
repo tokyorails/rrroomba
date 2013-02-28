@@ -1,6 +1,5 @@
 class RoombaSerialSimulation < Roomba
   attr_accessor :simulation, :requested_readings, :readings, :x, :y, :facing, :moving, :velocity, :turning, :degree, :timestamp, :world
-  ROOMBA_RADIUS = 176
 
   # currently the simulation settings are hardcoded in the initializer
   # need to refactor to allow various predefined or even random simulations
@@ -71,7 +70,7 @@ class RoombaSerialSimulation < Roomba
   end
 
   def radius
-    ROOMBA_RADIUS
+    RADIUS
   end
 
   def born_in(world)
