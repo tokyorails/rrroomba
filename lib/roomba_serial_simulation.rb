@@ -107,33 +107,6 @@ class RoombaSerialSimulation
     end
     @degree = signed_integer([args[2], args[3]])
     @turning = (@degree.abs == 1) ? true : false
-<<<<<<< HEAD
-=======
-    # Simulation can currently only handle the following (cannot support half-points or curves)
-    if @facing > 45 && @facing < 135
-      @facing = 90
-    elsif @facing >= 135 && @facing < 225
-      @facing = 180
-    elsif @facing >= 225 && @facing < 315
-      @facing = 270
-    else
-      @facing = 0
-    end
-    return true
-  end
-
-  def moving?
-    return @moving
-  end
-
-  def radius
-    RADIUS
-  end
-
-  def born_in(world)
-    @world = world
-  end
->>>>>>> master
 
     return true
   end

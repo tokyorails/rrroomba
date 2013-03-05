@@ -1,7 +1,7 @@
 # #####################
 # This class is an abstract interface for simulated robots
 # it can not be used directly
-# Child classes need to call the initializer with a driver and a the
+# Child classes need to call the initializer with a driver and the
 # class which drives the robot.
 # They need also to implement radius so we know its geometry
 # ###################
@@ -16,13 +16,13 @@ class RobotSimulation
     @real_robot = real_robot
     @world = world
 
-    yield self if block_given?
-
     # Set defaults if not set in the initializer block
     # These defaults match the previously hard-coded values
     @pose = Pose.new(Position.new(0,0),0)
     #TODO: formatter has to be a singleton everyone can use
     @formatter = formatter || Console.new
+
+    yield self if block_given?
   end
 
   def radius

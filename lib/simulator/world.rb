@@ -48,9 +48,9 @@ class World
       return true if distance_to_boundary <= 0
     end
 
-    @obstacles.each do |z|
-      distance = z.position.distance_to(robot.pos)
-      return true if distance <= (z.radius + robot.radius)
+    @obstacles.each do |obstacle|
+      distance = obstacle.position.distance_to(robot.pos)
+      return true if distance <= (obstacle.radius + robot.radius)
     end
     false
   end

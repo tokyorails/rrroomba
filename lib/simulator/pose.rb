@@ -12,7 +12,7 @@ class Pose
     @angle = angle
   end
 
-  #Modify this pose, with a relative position and angle
+  #Create a new pose, modifying previous with a relative position and angle
   def advance(distance, angle)
     new_angle = @angle + angle
     new_y = @position.y + distance * Math.cos(degrees_to_radians(new_angle))

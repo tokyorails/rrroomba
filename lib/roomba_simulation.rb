@@ -19,10 +19,7 @@ class RoombaSimulation  < RobotSimulation
 
   private
 
-  #TODO: TOTALLY Hacky. As I do not want to modify Roomba at all if
-  #possible, using metaprogramming to modify it from outside here.
-  #Eventually Roomba will get this mehods and constants from somewhere
-  #else so we can do this correctly.
+  #TODO: TOTALLY Hacky. Eventually Roomba can get its time from an API so we can hook there.
   def modify_roomba_internals(simulation)
     Roomba.send(:define_method, :current_time) do
       simulation.current_time
