@@ -14,7 +14,7 @@ class Plane
 
   def distance_to(object)
     if object.class == Circle || object.class.ancestors.include?(RobotSimulation)
-      distance_to_point(object.position) - object.radius
+      distance_to_point(object.pos) - object.radius
     elsif object.class == Position
       distance_to_point(object)
     else

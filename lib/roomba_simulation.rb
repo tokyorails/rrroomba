@@ -15,7 +15,7 @@ class RoombaSimulation  < RobotSimulation
   end
 
   def radius
-    Roomba::ROOMBA_RADIUS
+    Roomba::Specification::RADIUS
   end
 
   private
