@@ -5,15 +5,14 @@ class RoombaSerialSimulation
 
   # currently the simulation settings are hardcoded in the initializer
   # need to refactor to allow various predefined or even random simulations
-  def initialize(bumper, formatter = nil)
+  def initialize(sensors, formatter = nil)
     # The following are not to be set by the user
-    @moving = false
     @velocity = 0
     @degree = 0
     @turning = false
     @readings = []
     @formatter = formatter || Console.new
-    @bumper = bumper
+    @bumpers = sensors #bumpers are the only sensors we have now
     @waiting_bytes = 0
     @command_bytes = []
     self
@@ -40,10 +39,6 @@ class RoombaSerialSimulation
         dispatch_command
       end
     end
-  end
-
-  def moving?
-    return @moving
   end
 
   def calculate_rotation(step_time)
@@ -99,8 +94,8 @@ class RoombaSerialSimulation
     # update x, y; check if any obstacle coordinates fall inside roomba's radius;
     # queue sensor readings in some array to simulate TX/RX
     @velocity = signed_integer([args[0], args[1]])
-    @moving = (@velocity.abs > 0) ? true : false
-    if @moving
+    moving = (@velocity.abs > 0) ? true : false
+    if moving
       @formatter.debug "Moving at #{@velocity}mm/s"
     else
       @formatter.debug "Stopped moving"
@@ -131,7 +126,7 @@ class RoombaSerialSimulation
   # environment can leverage the same current X,Y coordinates
   def prepare_reading_7
     # TODO: distinguish collisions with bumpers and not bumpers
-    if @bumper.got_collisions?
+    if @bumpers.any?(&:got_collisions?)
       @readings.push 1
     else
       @readings.push 0

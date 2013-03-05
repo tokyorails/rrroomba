@@ -41,16 +41,14 @@ class World
   end
 
 
-  def collision_with?(robot)
+  def collision_with?(object)
 
     @boundaries.each do |boundary|
-      distance_to_boundary = boundary.distance_to(robot.pos) - robot.radius
-      return true if distance_to_boundary <= 0
+      return true if boundary.distance_to(object) <= 0
     end
 
     @obstacles.each do |obstacle|
-      distance = obstacle.position.distance_to(robot.pos)
-      return true if distance <= (obstacle.radius + robot.radius)
+      return true if obstacle.distance_to(object) <= 0
     end
     false
   end

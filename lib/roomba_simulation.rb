@@ -4,7 +4,8 @@
 class RoombaSimulation  < RobotSimulation
   def initialize(simulation)
     world = simulation.world
-    serial = RoombaSerialSimulation.new(Bumper.new(self, world))
+    bumpers = [ Bumper.new(self, -45, 30, world), Bumper.new(self, 45, 30, world) ]
+    serial = RoombaSerialSimulation.new(bumpers)
     modify_roomba_internals(simulation)
     real_robot = Roomba.new('simulation', 0, 115200, serial)
     world.spawn(self)

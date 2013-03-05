@@ -12,9 +12,21 @@ class Plane
     @distance_to_origin = distance_to_origin
   end
 
-  def distance_to(point)
+  def distance_to(object)
+    if object.class == Circle || object.class.ancestors.include?(RobotSimulation)
+      distance_to_point(object.position) - object.radius
+    elsif object.class == Position
+      distance_to_point(object)
+    else
+      raise "can not calculate distance from Plane to #{object.class}"
+    end
+  end
+
+  private
+    
+  def distance_to_point(point)
     projected_point = normal.project(point)
-    projected_point.x + projected_point.y + distance_to_origin
+    projected_point.x + projected_point.y + @distance_to_origin
   end
 
 end

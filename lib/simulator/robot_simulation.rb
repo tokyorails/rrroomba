@@ -6,7 +6,7 @@
 # They need also to implement radius so we know its geometry
 # ###################
 class RobotSimulation
-  attr_reader :facing
+  attr_reader :pose
 
   def initialize(world, driver, real_robot, formatter = nil)
     raise "A virtual robot needs virtual hardware" if driver.nil?
@@ -44,6 +44,7 @@ class RobotSimulation
     ui = {}
     ui['x'] = @pose.position.x
     ui['y'] = @pose.position.y
+    ui['angle'] = @pose.angle
     ui['radius'] = radius
     ui['name'] = 'Roomba'
     ui
