@@ -18,7 +18,7 @@ class RobotSimulation
 
     # Set defaults if not set in the initializer block
     # These defaults match the previously hard-coded values
-    @pose = Pose.new(Position.new(0,0),0)
+    @pose = Ein::Pose.new(Ein::Position.new(0,0),0)
     #TODO: formatter has to be a singleton everyone can use
     @formatter = formatter || Console.new
 

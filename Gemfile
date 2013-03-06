@@ -22,6 +22,7 @@ end
 
 group :development,:test do
   gem 'debugger'
+  gem 'ein' #physics simulator
 end
 
 group :development do
