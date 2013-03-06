@@ -29,6 +29,11 @@ class RobotSimulation
     100  #default radius, this method should be overloaded by every robot
   end
 
+  #this is needed so the physics simulation treat objects of this class as circles
+  def physical_shape
+    :circle
+  end
+
   def step(step_time)
     @previous_pose = @pose.dup
     @pose = @pose.advance(@driver.calculate_distance(step_time), @driver.calculate_rotation(step_time))

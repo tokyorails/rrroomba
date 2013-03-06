@@ -5,7 +5,7 @@ class RoombaSerialSimulation
 
   # currently the simulation settings are hardcoded in the initializer
   # need to refactor to allow various predefined or even random simulations
-  def initialize(sensors, formatter = nil)
+  def initialize(sensors=nil, formatter = nil)
     # The following are not to be set by the user
     @velocity = 0
     @degree = 0
@@ -126,7 +126,7 @@ class RoombaSerialSimulation
   # environment can leverage the same current X,Y coordinates
   def prepare_reading_7
     # TODO: distinguish collisions with bumpers and not bumpers
-    if @bumpers.any?(&:got_collisions?)
+    if @bumpers && @bumpers.any?(&:got_collisions?)
       @readings.push 1
     else
       @readings.push 0
