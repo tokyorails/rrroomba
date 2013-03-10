@@ -10,7 +10,7 @@ Turn.config do |c|
   # :pretty   - new pretty reporter
   # :marshal  - dump output as YAML (normal run mode only)
   # :cue      - interactive testing
-  c.format  = :outline
+  c.format  = :pretty
   # turn on invoke/execute tracing, enable full backtrace
   c.trace   = true
   # use humanized test names (works only with :outline format)

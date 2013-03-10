@@ -1,98 +1,117 @@
-class RoombaSerialSimulation < Roomba
-  attr_accessor :simulation, :requested_readings, :readings, :x, :y, :facing, :moving, :velocity, :turning, :degree, :timestamp, :world
+class RoombaSerialSimulation
+
+  include ByteProcessing
+  include Calculations
 
   # currently the simulation settings are hardcoded in the initializer
   # need to refactor to allow various predefined or even random simulations
-  def initialize
-    yield self if block_given?
-
-    # Set defaults if not set in the initializer block
-    # These defaults match the previously hard-coded values
-    @simulation ||= 'simulation'
-    @x ||= 0
-    @y ||= 0
-    @facing ||= 0 #+y, @facing of 90 == +x, @facing of 180 == -y, @facing of 270 == -x
-
+  def initialize(sensors=nil)
     # The following are not to be set by the user
-    @moving = false
     @velocity = 0
     @degree = 0
     @turning = false
     @readings = []
+    @bumpers = sensors #bumpers are the only sensors we have now
+    @waiting_bytes = 0
+    @command_bytes = []
     self
   end
 
-
   # When the RoombaSimulation class tries to send data to the simulated Roomba
-  # this is where that data arrives. Check the first byte to get the opcode
-  # if a method exists for handling that opcode, run it; Need to write mock
-  # methods for each useful ROI command
+  # this is where that data arrives.
+  # Roomba will write one byte at a time here
+  # we need to take all the bytes and reconstruct the original order
+  # This method will be highly simplify when we abstract from the byte
+  # protocoll of Roomba to a more general interface.
+  # Need to write mock methods for each useful ROI command
+
   def write(*bytes)
-    puts "Bytes Roomba received: #{bytes.inspect}"
-    command = bytes.shift
-    case command
-    when 137
-      move(*bytes)
-    when 149
-      prepare_readings(*bytes)
+    byte = bytes.first.ord
+    if @waiting_bytes == 0
+      command = byte
+      @command_bytes = [command]
+      @waiting_bytes = bytes_needed_per_command(command)
+    else
+      @command_bytes.push byte
+      @waiting_bytes -= 1
+      if @waiting_bytes == 0
+        dispatch_command
+      end
     end
   end
 
+  def calculate_rotation(step_time)
+    if @turning
+      calculate_spin_degree(@velocity, step_time)
+    else
+      0
+    end
+  end
+
+  def calculate_distance(step_time)
+    if @turning
+      0
+    else
+      @velocity * step_time
+    end
+  end
+
+
+  # When the RoombaSimulation requests a byte from
+  # the simulated serial port, it gets shifted off the array of available bytes.
+  def getbyte
+    @readings.shift
+  end
+
+  def read_timeout=(timeout)
+  end
+
+
+  private
+
+  def dispatch_command
+    command = @command_bytes.shift
+    case command
+    when 137
+      setup_move(@command_bytes)
+    when 149
+      prepare_readings(@command_bytes)
+    when 128,130
+      LOGGER.info "Roomba API ready to receive commands"
+    else
+      LOGGER.debug "Command not implemented #{command}"
+    end
+  end
+
+  def bytes_needed_per_command(command)
+    bytes_per_command = { 137 => 4, 128 => 0, 130 => 0, 149 => 3 }
+    bytes_per_command[command] || 0
+  end
+  
   # Sets the state of simulated Roomba to moving
-  def move(*args)
+  def setup_move(args)
     # update x, y; check if any obstacle coordinates fall inside roomba's radius;
     # queue sensor readings in some array to simulate TX/RX
     @velocity = signed_integer([args[0], args[1]])
-    @moving = (@velocity.abs > 0) ? true : false
-    if @moving
-      puts "Moving at #{@velocity}mm/s"
+    moving = (@velocity.abs > 0) ? true : false
+    if moving
+      LOGGER.debug "Moving at #{@velocity}mm/s"
     else
-      puts "Stopped moving"
+      LOGGER.debug "Stopped moving"
     end
-    @timestamp = Time.now
     @degree = signed_integer([args[2], args[3]])
     @turning = (@degree.abs == 1) ? true : false
-    # Simulation can currently only handle the following (cannot support half-points or curves)
-    if @facing > 45 && @facing < 135
-      @facing = 90
-    elsif @facing >= 135 && @facing < 225
-      @facing = 180
-    elsif @facing >= 225 && @facing < 315
-      @facing = 270
-    else
-      @facing = 0
-    end
+
     return true
   end
 
-  def moving?
-    return @moving
-  end
-
-  def radius
-    RADIUS
-  end
-
-  def born_in(world)
-    @world = world
-  end
-
-  def render
-    ui = {}
-    ui['x'] = x
-    ui['y'] = y
-    ui['radius'] = radius
-    ui['name'] = 'Roomba'
-    ui
-  end
-
   def prepare_readings(*args)
-    args.each do |request|
-      SENSORS.each do |sensor|
+    args.first.each do |request|
+      Roomba::SENSORS.each do |sensor|
         if sensor[1][:packet] == request
-          if respond_to? "prepare_reading_#{request}".to_sym
+          begin
             send("prepare_reading_#{request}".to_sym)
-          else
+          rescue NameError
             1.upto(sensor[1][:bytes]) { @readings.push(0) }
           end
         end
@@ -105,78 +124,12 @@ class RoombaSerialSimulation < Roomba
   # Roomba's state, so that other sensors that also check Roomba's immediate
   # environment can leverage the same current X,Y coordinates
   def prepare_reading_7
-    start_x = @x
-    start_y = @y
-    previous_x = 0
-    previous_y = 0
-    reading = 0 #value of bump_and_drops sensors
-    latest_check_time = Time.now
-    difference = latest_check_time - @timestamp #difference from last reading
-    puts @turning.inspect
-    if !@turning
-      puts "Time diff: #{difference}"
-      distance = (@velocity * difference).to_i
-      puts "Travelled #{distance}mm"
-      if distance > 0 #driving forward
-        1.upto(distance) do |x|
-          previous_x = @x
-          previous_y = @y
-          case @facing
-          when 0
-            @y = @y+1
-          when 90
-            @x = @x+1
-          when 180
-            @y = @y-1
-          when 270
-            @x = @x-1
-          end
-          puts "N:#{@facing}, X:#{@x} Y:#{@y}"
-          reading = (@world.collision_with?(self)) ? 1 : 0
-          break if reading == 1
-        end
-      else #driving backward, driving blind (no sensors!)
-        distance.upto(0) do |x|
-          previous_x = @x
-          previous_y = @y
-          case @facing
-          when 0
-            @y = @y-1
-          when 90
-            @x = @x-1
-          when 180
-            @y = @y+1
-          when 270
-            @x = @x+1
-          end
-          puts "N:#{@facing}, X:#{@x} Y:#{@y}"
-          blind_reading = (@world.collision_with?(self)) ? 1 : 0
-          break if blind_reading == 1
-        end
-        reading = 0 #always return 0 when driving blind
-      end
-      if reading == 1 #hit something at that coordinate, impassable, back to previous coordinate (don't share points)
-        @x = previous_x
-        @y = previous_y
-      end
-      if start_x != @x || start_y != @y #some coordinate changed
-        @timestamp = latest_check_time #enough time accumalated to register movement, record this check in timestamp so we don't accelerate exponentially
-      end
+    # TODO: distinguish collisions with bumpers and not bumpers
+    if @bumpers && @bumpers.any?(&:got_collisions?)
+      @readings.push 1
     else
-      @timestamp = latest_check_time
-      @facing = @facing + calculate_spin_degree(@velocity, latest_check_time)
-      puts "N:#{@facing}"
+      @readings.push 0
     end
-
-    @readings.push(reading)
   end
 
-  # When the RoombaSimulation requests a byte from
-  # the simulated serial port, it gets shifted off the array of available bytes.
-  def getbyte
-    readings.shift
-  end
-
-  def read_timeout=(timeout)
-  end
 end

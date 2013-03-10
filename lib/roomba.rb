@@ -19,6 +19,8 @@ class Roomba
     :saturday  => '01000000'
   }
 
+  include ByteProcessing
+  include Calculations
 
   def initialize(port, latency=0.1, baud=115200, serial=nil)
     # baud must be 115200 for communicating with 500 series Roomba and newer (tested with Roomba 770), change to 57600 for 400 series and older
@@ -65,9 +67,9 @@ class Roomba
     set_velocity(velocity)
     set_degree(degree)
     drive(@velocity_high, @velocity_low, @radius_high, @radius_low)
-    start_moving = Time.now
     time_in_seconds = 10 if time_in_seconds > 10
-    until (start_moving - Time.now).abs >= time_in_seconds
+    start_moving = current_time
+    until (start_moving - current_time).abs >= time_in_seconds
       # sensors call sleeps the script for 20ms, max read is 50ms, total time between loops about 65ms
       sensors = get_readings(:bumps_and_drops, :wall)
       @messages.push sensors
@@ -77,15 +79,10 @@ class Roomba
     sensors
   end
 
-  def calculate_spin_time(velocity, degree)
-    # time = wheelbase * PI / 360degrees * degrees / velocity ABS
-    # wheelbase might be different for different roombas, consider refactoring
-    ((((WHEELBASE * Math::PI) / 360) * degree.abs).to_f / velocity.to_f).abs
-  end
-
-  #spinning needs some work
-  def calculate_spin_degree(velocity, time)
-    ((time.to_f * velocity.to_f) / ((WHEELBASE * Math::PI) / 360)) / 10**10
+  #This is overwritten in the roomba_simulation so we can use simulation
+  #time instead of real world time.
+  def current_time
+    Time.now
   end
 
   def set_degree(degree)
@@ -166,7 +163,7 @@ class Roomba
       readings[sensor] = {:raw => nil, :formatted => []}
       readings[sensor][:raw] = bytes.shift(SENSORS[sensor][:bytes])
       readings[sensor][:formatted] = set_readings(sensor, readings[sensor][:raw])
-      puts "Sensors: #{readings[sensor].inspect}"
+      #puts "Sensors: #{readings[sensor].inspect}"
     end
     readings #return hash of readings
   end
@@ -186,16 +183,6 @@ class Roomba
       return readings[0] << 8 | readings[1]
     else SENSORS[sensor][:signed] && SENSORS[sensor][:bytes] == 2 #return a signed 2 byte integer, twos complement
       return signed_integer(readings)
-    end
-  end
-
-  def signed_integer(bytes)
-    case bytes.size
-    when 1
-      return (bytes[0] & ~(1 << 7)) - (bytes[0] & (1 << 7))
-    when 2
-      sixteenbit = bytes[0] << 8 | bytes[1]
-      return (sixteenbit & ~(1 << 15)) - (sixteenbit & (1 << 15))#http://en.wikipedia.org/wiki/Two%27s_complement#Calculating_two.27s_complement
     end
   end
 
