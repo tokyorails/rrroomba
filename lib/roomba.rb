@@ -5,9 +5,12 @@
 class Roomba
   Dir["#{Rails.root}/lib/roomba/*rb"].each { |file|
   	require file
-  	include ("Roomba::" + File.basename(file).gsub('.rb','').split("_").map{ |ea| ea.capitalize }.join).constantize
   }
-  attr_accessor :serial, :velocity_hex, :velocity_high, :velocity_low, :radius_hex, :radius_high, :radius_low, :latency, :messages
+
+  include Roomba::API
+  include Roomba::Specification
+
+  attr_accessor :serial, :velocity, :degree, :latency, :messages
 
   SCHEDULE_DAYS = {
     :sunday    => '00000001',
@@ -19,7 +22,6 @@ class Roomba
     :saturday  => '01000000'
   }
 
-
   def initialize(port, latency=0.1, baud=115200, serial=nil)
     # baud must be 115200 for communicating with 500 series Roomba and newer (tested with Roomba 770), change to 57600 for 400 series and older
     if serial.nil? # we need to provide our own serial
@@ -29,10 +31,10 @@ class Roomba
     end
     @messages = []
     @latency = latency
-    sleep 0.2
-    setup_start
-    sleep 0.1
-    setup_control
+    @position = Position2D.new(serial,latency)
+    @sensors = Sensors.new(serial,latency)
+    @roomba_driver = RoombaDriver.new(serial,latency)
+    @roomba_driver.start
     self
   end
 
@@ -62,9 +64,8 @@ class Roomba
     else
       time_in_seconds = (distance.to_f / velocity.to_f).abs
     end
-    set_velocity(velocity)
-    set_degree(degree)
-    drive(@velocity_high, @velocity_low, @radius_high, @radius_low)
+    @velocity, @degree = velocity, degree
+    @position.drive(velocity,degree)
     start_moving = Time.now
     time_in_seconds = 10 if time_in_seconds > 10
     until (start_moving - Time.now).abs >= time_in_seconds
@@ -73,8 +74,16 @@ class Roomba
       @messages.push sensors
       break if sensors[:bumps_and_drops][:formatted].to_i(2) > 0
     end
-    drive(0,0,0,0)
+    @position.drive(0,0)
     sensors
+  end
+
+  def set_velocity(velocity)
+    @position.set_velocity(velocity)
+  end
+
+  def set_degree(degree)
+    @position.set_degree(degree)
   end
 
   def calculate_spin_time(velocity, degree)
@@ -88,105 +97,25 @@ class Roomba
     ((time.to_f * velocity.to_f) / ((WHEELBASE * Math::PI) / 360)) / 10**10
   end
 
-  def set_degree(degree)
-    if degree == 0
-      mm = 32768
-    elsif degree.abs == 1
-      mm = 1 * (degree <=> 0)
-    else
-      #Roomba will drive on an arc
-      degree = -degree #I want right to be positive and left to be negative :)
-      degree = (180 - degree.abs) * (degree <=> 0)
-      mm = (1.0 / (180.0 / 2000.0)) * degree.to_f
-    end
-
-    @radius_hex = "%04X" % mm.to_i
-    @radius_high = @radius_hex[0..1].to_i(16)#high byte
-    @radius_low = @radius_hex[2..3].to_i(16)#low byte
-  end
-
-  def set_velocity(velocity)
-    if velocity.abs > 500
-      velocity = 500 * (velocity <=> 0)#don't forget the sign
-    end
-    @velocity_hex = ("%04X" % velocity).sub("..","F")[-4,4]#have to remove the leading .. when a two's complement negative is converted to hex
-    @velocity_high = @velocity_hex[0..1].to_i(16)#high byte
-    @velocity_low = @velocity_hex[2..3].to_i(16)#low byte
-  end
 
   def messages
     return @messages.shift(@messages.size)
   end
 
-  # quick report of basic info, should break this out into individual method calls
+  def get_readings(*sensors_requested)
+    @sensors.get_readings(sensors_requested)
+  end
+
   def report
-    sensors = get_readings(:temperature, :oi_mode, :charging_source, :battery_charge, :battery_capacity, :current)
-    sensors[:temperature][:text] = sensors[:temperature][:formatted].to_s + " Celsius"
-    sensors[:battery_charge][:text] = sensors[:battery_charge][:formatted]
-    sensors[:battery_capacity][:text] = sensors[:battery_capacity][:formatted]
-    sensors[:current][:text] = sensors[:current][:formatted].to_s + " mA"
-
-    sensors[:oi_mode][:text] = case sensors[:oi_mode][:formatted]
-    when 0
-      "off"
-    when 1
-      "passive mode"
-    when 2
-      "safe mode"
-    when 3
-      "full mode"
-    end
-
-    sensors[:charging_source][:text] = case sensors[:charging_source][:raw]
-    when 1
-      "charging"
-    when 2
-      "docked"
-    when 3
-      "docked+"
-    else
-      "undocked"
-    end
-
+    sensors = @sensors.report
+  
     if sensors[:battery_charge][:text] == 0
 
     else
       @messages.push sensors
     end
+
     sensors
-  end
-
-  def get_readings(*sensors_requested)
-    sensors_requested.collect!{|c| c.to_sym }
-    packet_ids = sensors_requested.map{ |sensor| SENSORS[sensor][:packet] }
-    bytes = querylist(*packet_ids)
-    readings = {}
-    readings[:time] = Time.now.to_i
-    sensors_requested.each do |sensor|
-      readings[sensor] = {:raw => nil, :formatted => []}
-      readings[sensor][:raw] = bytes.shift(SENSORS[sensor][:bytes])
-      readings[sensor][:formatted] = set_readings(sensor, readings[sensor][:raw])
-      puts "Sensors: #{readings[sensor].inspect}"
-    end
-    readings #return hash of readings
-  end
-
-  def set_readings(sensor, readings)
-    readings[0] = 0 if readings[0].nil?
-    if SENSORS[sensor][:bytes] > 1
-      readings[1] = 0 if readings[1].nil?
-    end
-    if SENSORS[sensor][:bits] #return a string representation of the bits
-      return readings.first.to_s(2)
-    elsif !SENSORS[sensor][:signed] && SENSORS[sensor][:bytes] == 1 #return an unsigned integer
-      return readings.first
-    elsif SENSORS[sensor][:signed] && SENSORS[sensor][:bytes] == 1 #return a signed integer
-      return signed_integer(readings)
-    elsif !SENSORS[sensor][:signed] && SENSORS[sensor][:bytes] == 2 #return an unsigned 2 byte integer
-      return readings[0] << 8 | readings[1]
-    else SENSORS[sensor][:signed] && SENSORS[sensor][:bytes] == 2 #return a signed 2 byte integer, twos complement
-      return signed_integer(readings)
-    end
   end
 
   def signed_integer(bytes)
@@ -252,14 +181,8 @@ class Roomba
     song(1,9, 74,42, 74,42, 74,42, 75,30, 70,12, 66,40, 63,30, 70,12, 67,18)
   end
 
-  # wake the Roomba up
   def wakeup
-    @serial.rts = 0
-    sleep 0.1
-    @serial.rts = 1
-    sleep 2
-    setup_start
-    setup_control
+    @roomba_drive.wakeup
   end
 
   # sets the cleaning schedule
