@@ -8,7 +8,7 @@
 class RobotSimulation
   attr_reader :pose
 
-  def initialize(world, driver, real_robot, formatter = nil)
+  def initialize(world, driver, real_robot)
     raise "A virtual robot needs virtual hardware" if driver.nil?
     raise "A virtual robot needs a real robot implementation" if real_robot.nil?
     raise "A virtual robot needs a simulation" if world.nil?
@@ -19,8 +19,6 @@ class RobotSimulation
     # Set defaults if not set in the initializer block
     # These defaults match the previously hard-coded values
     @pose = Ein::Pose.new(Ein::Position.new(0,0),0)
-    #TODO: formatter has to be a singleton everyone can use
-    @formatter = formatter || Console.new
 
     yield self if block_given?
   end
@@ -37,7 +35,7 @@ class RobotSimulation
   def step(step_time)
     @previous_pose = @pose.dup
     @pose = @pose.advance(@driver.calculate_distance(step_time), @driver.calculate_rotation(step_time))
-    @formatter.debug "#@pose"
+    LOGGER.debug "#@pose"
   end
 
   #TODO: this is fugly, should be a better way to stop on obstacles

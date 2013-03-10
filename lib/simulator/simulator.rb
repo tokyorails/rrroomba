@@ -8,3 +8,9 @@ class Simulator < Ein::Simulator
 
 end
 
+#####
+# Our logger, default level is info.
+# Please use only .info and .debug levels
+#####
+LOGGER = Logger.new(STDOUT)
+LOGGER.level = Logger::INFO

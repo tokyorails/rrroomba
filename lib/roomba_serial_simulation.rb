@@ -5,13 +5,12 @@ class RoombaSerialSimulation
 
   # currently the simulation settings are hardcoded in the initializer
   # need to refactor to allow various predefined or even random simulations
-  def initialize(sensors=nil, formatter = nil)
+  def initialize(sensors=nil)
     # The following are not to be set by the user
     @velocity = 0
     @degree = 0
     @turning = false
     @readings = []
-    @formatter = formatter || Console.new
     @bumpers = sensors #bumpers are the only sensors we have now
     @waiting_bytes = 0
     @command_bytes = []
@@ -78,9 +77,9 @@ class RoombaSerialSimulation
     when 149
       prepare_readings(@command_bytes)
     when 128,130
-      @formatter.info "Roomba API ready to receive commands"
+      LOGGER.info "Roomba API ready to receive commands"
     else
-      @formatter.debug "Command not implemented #{command}"
+      LOGGER.debug "Command not implemented #{command}"
     end
   end
 
@@ -96,9 +95,9 @@ class RoombaSerialSimulation
     @velocity = signed_integer([args[0], args[1]])
     moving = (@velocity.abs > 0) ? true : false
     if moving
-      @formatter.debug "Moving at #{@velocity}mm/s"
+      LOGGER.debug "Moving at #{@velocity}mm/s"
     else
-      @formatter.debug "Stopped moving"
+      LOGGER.debug "Stopped moving"
     end
     @degree = signed_integer([args[2], args[3]])
     @turning = (@degree.abs == 1) ? true : false
